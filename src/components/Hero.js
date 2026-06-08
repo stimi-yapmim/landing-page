@@ -1,6 +1,7 @@
 "use client";
 
 import { Play, Calendar, Download, FileText } from "lucide-react";
+import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useT } from "@/lib/translations";
 
@@ -67,9 +68,11 @@ export default function Hero() {
               <div className="divide-y divide-slate-100 dark:divide-slate-800 px-6 py-4">
                 {t.notices.map((notice, i) => (
                   <div key={i} className="py-4 first:pt-1 last:pb-1">
-                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 hover:text-brand-cyan-600 dark:hover:text-brand-cyan-400 cursor-pointer transition-colors leading-snug">
-                      {notice.title}
-                    </h3>
+                    <Link href={`/announcements/${notice.id}`}>
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 hover:text-brand-cyan-600 dark:hover:text-brand-cyan-400 cursor-pointer transition-colors leading-snug">
+                        {notice.title}
+                      </h3>
+                    </Link>
                     <div className="mt-2.5 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5 text-brand-cyan-500" />
@@ -78,10 +81,9 @@ export default function Hero() {
                       <span className="text-[10px] bg-slate-100 dark:bg-brand-navy-800 px-1.5 py-0.5 rounded font-mono">
                         {notice.docId}
                       </span>
-                      <a href="#" className="flex items-center gap-1 text-brand-cyan-600 hover:text-brand-cyan-500 font-bold" aria-label="Download">
-                        <Download className="h-3.5 w-3.5" />
-                        <span>PDF</span>
-                      </a>
+                      <Link href={`/announcements/${notice.id}`} className="flex items-center gap-1 text-brand-cyan-600 hover:text-brand-cyan-500 font-bold" aria-label="Detail">
+                        <span>Detail</span>
+                      </Link>
                     </div>
                   </div>
                 ))}

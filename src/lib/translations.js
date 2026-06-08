@@ -26,16 +26,19 @@ export const translations = {
       admissionOpen: "Pendaftaran Dibuka",
       notices: [
         {
+          id: "lib-availability",
           title: "Ketersediaan E-Library Digital Kampus",
           date: "08 Juni 2026",
           docId: "YAPMI/REG/LIB/0023/2026",
         },
         {
+          id: "entrepreneurship-seminar",
           title: "Seminar Kewirausahaan & Ekonomi Kreatif",
           date: "02 Juni 2026",
           docId: "YAPMI/SEM/ENT/0014/2026",
         },
         {
+          id: "admission-schedule",
           title: "Jadwal Penerimaan & Kelas Ganjil 2026/2027",
           date: "25 Mei 2026",
           docId: "YAPMI/ADM/SCH/0002/2026",
@@ -234,6 +237,62 @@ export const translations = {
       ],
     },
 
+    // ── Lecturers ─────────────────────────────────────────
+    lecturers: {
+      badge: "Dosen & Staf Pengajar",
+      title: "Dosen & Staf Pengajar Kami",
+      subtitle: "Bimbingan akademis terbaik dari para ahli, praktisi industri, dan akademisi berpengalaman di STIMI YAPMI.",
+      items: [
+        {
+          name: "Dr. H. Dahlan, S.E., M.M.",
+          role: "Ketua STIMI YAPMI & Dosen Manajemen",
+          desc: "Akademisi berpengalaman lebih dari 20 tahun dalam manajemen strategi dan kepemimpinan organisasi.",
+        },
+        {
+          name: "Dr. Nurlela, S.E., M.Si.",
+          role: "Wakil Ketua I & Dosen Manajemen SDM",
+          desc: "Spesialis dalam pengembangan kompetensi kerja dan perilaku organisasi sektor publik & swasta.",
+        },
+        {
+          name: "Andi Syahrul, S.E., M.M.",
+          role: "Kepala UPT Kewirausahaan & Dosen Keuangan",
+          desc: "Praktisi analisis investasi dan pendampingan UMKM digital di Sulawesi Selatan.",
+        },
+        {
+          name: "Sri Wahyuni, S.E., M.Si.",
+          role: "Humas & Dosen Pemasaran",
+          desc: "Ahli komunikasi pemasaran terpadu, riset konsumen, dan branding media sosial.",
+        },
+        {
+          name: "Muhammad Yusuf, S.E., M.B.A.",
+          role: "Dosen Manajemen Bisnis & Startup Mentor",
+          desc: "Konsultan strategi bisnis, mentor inkubator startup, dan praktisi transformasi digital.",
+        },
+      ],
+    },
+
+    // ── Partners ──────────────────────────────────────────
+    partners: {
+      badge: "Kemitraan & Kerja Sama",
+      title: "Mitra Strategis Kami",
+      subtitle: "Bekerja sama dengan berbagai instansi pemerintahan, sektor industri, perbankan, dan dunia usaha untuk program magang dan penempatan karir lulusan.",
+      list: [
+        { name: "UNHAS Hotel & Convention", role: "Mitra Strategis", image: "Unhas.png" },
+        { name: "Binus University", role: "Mitra Akademik", image: "Binus.png" },
+        { name: "Universitas Gunadarma", role: "Mitra Akademik", image: "Gunadarma.png" },
+        { name: "UIN Alauddin Makassar", role: "Mitra Akademik", image: "Alauddin.png" },
+        { name: "Tashkent State Univ. of Economics", role: "Mitra Internasional", image: "TSUE.png" },
+        { name: "Bank Rakyat Indonesia (BRI)", role: "Mitra Keuangan", image: "BRI.png" },
+        { name: "Pemprov Sulawesi Selatan", role: "Pemerintah Provinsi", image: "Sulsel.png" },
+        { name: "Pemkot Makassar", role: "Pemerintah Kota", image: "Makassar.png" },
+        { name: "Pemkab Maros", role: "Pemerintah Kabupaten", image: "Maros.png" },
+        { name: "Pemkot Parepare", role: "Pemerintah Kota", image: "Pare pare.png" },
+        { name: "Pemkab Luwu Timur", role: "Pemerintah Kabupaten", image: "Luwu timur.png" },
+        { name: "Institut Pertanian Bogor", role: "Mitra Akademik", image: "Bogor.png" },
+        { name: "Instituto Politécnico de Portalegre", role: "Mitra Internasional", image: "IPP.png" },
+      ],
+    },
+
     // ── Footer ──────────────────────────────────────────
     footer: {
       about: "Sekolah Tinggi Ilmu Manajemen Indonesia (STIMI) YAPMI Makassar didirikan di bawah naungan Yayasan Pembangunan Manajemen Indonesia. Fokus mencetak lulusan S1 Manajemen yang unggul, berintegritas, dan inovatif.",
@@ -274,9 +333,9 @@ export const translations = {
       noticeHeader: "Notice / Announcement",
       admissionOpen: "Admission Open",
       notices: [
-        { title: "Digital E-Library Campus Availability", date: "08 June 2026", docId: "YAPMI/REG/LIB/0023/2026" },
-        { title: "Entrepreneurship & Creative Economy Seminar", date: "02 June 2026", docId: "YAPMI/SEM/ENT/0014/2026" },
-        { title: "Odd Semester 2026/2027 Admission Schedule", date: "25 May 2026", docId: "YAPMI/ADM/SCH/0002/2026" },
+        { id: "lib-availability", title: "Digital E-Library Campus Availability", date: "08 June 2026", docId: "YAPMI/REG/LIB/0023/2026" },
+        { id: "entrepreneurship-seminar", title: "Entrepreneurship & Creative Economy Seminar", date: "02 June 2026", docId: "YAPMI/SEM/ENT/0014/2026" },
+        { id: "admission-schedule", title: "Odd Semester 2026/2027 Admission Schedule", date: "25 May 2026", docId: "YAPMI/ADM/SCH/0002/2026" },
       ],
     },
 
@@ -460,6 +519,62 @@ export const translations = {
           excerpt: "Register now in Wave I to receive special discounts on educational infrastructure fees and access to KIP-Kuliah scholarships with special quotas.",
           link: "/news/news-admission",
         },
+      ],
+    },
+
+    // ── Lecturers ─────────────────────────────────────────
+    lecturers: {
+      badge: "Faculty & Lecturers",
+      title: "Our Lecturers & Faculty Members",
+      subtitle: "Outstanding academic guidance from industry experts, practitioners, and experienced academicians at STIMI YAPMI.",
+      items: [
+        {
+          name: "Dr. H. Dahlan, S.E., M.M.",
+          role: "Chairman of STIMI YAPMI & Management Lecturer",
+          desc: "Academician with over 20 years of experience in strategic management and organizational leadership.",
+        },
+        {
+          name: "Dr. Nurlela, S.E., M.Si.",
+          role: "Vice Chair I & HR Management Lecturer",
+          desc: "Specialist in work competency development and organizational behavior in public & private sectors.",
+        },
+        {
+          name: "Andi Syahrul, S.E., M.M.",
+          role: "Head of Entrepreneurship & Finance Lecturer",
+          desc: "Practitioner in investment analysis and digital coaching for regional SMEs in South Sulawesi.",
+        },
+        {
+          name: "Sri Wahyuni, S.E., M.Si.",
+          role: "PR & Marketing Lecturer",
+          desc: "Expert in integrated marketing communications, consumer research, and social branding.",
+        },
+        {
+          name: "Muhammad Yusuf, S.E., M.B.A.",
+          role: "Business Lecturer & Startup Mentor",
+          desc: "Business strategy consultant, startup incubator mentor, and digital transformation practitioner.",
+        },
+      ],
+    },
+
+    // ── Partners ──────────────────────────────────────────
+    partners: {
+      badge: "Partnerships & Cooperations",
+      title: "Our Strategic Partners",
+      subtitle: "Collaborating with government agencies, industrial sectors, banking, and enterprises for internship programs and graduate career placements.",
+      list: [
+        { name: "Hasanuddin University", role: "Academic Partner", image: "Unhas.png" },
+        { name: "Binus University", role: "Academic Partner", image: "Binus.png" },
+        { name: "Gunadarma University", role: "Academic Partner", image: "Gunadarma.png" },
+        { name: "UIN Alauddin Makassar", role: "Academic Partner", image: "Alauddin.png" },
+        { name: "Tashkent State Univ. of Economics", role: "International Partner", image: "TSUE.png" },
+        { name: "Bank Rakyat Indonesia (BRI)", role: "Financial Partner", image: "BRI.png" },
+        { name: "South Sulawesi Prov. Government", role: "Provincial Government", image: "Sulsel.png" },
+        { name: "Makassar City Government", role: "City Government", image: "Makassar.png" },
+        { name: "Maros Regency Government", role: "Regency Government", image: "Maros.png" },
+        { name: "Parepare City Government", role: "City Government", image: "Pare pare.png" },
+        { name: "Luwu Timur Regency Government", role: "Regency Government", image: "Luwu timur.png" },
+        { name: "Bogor City Government", role: "City Government", image: "Bogor.png" },
+        { name: "Strategic Partner", role: "Cooperation Partner", image: "IPP.png" },
       ],
     },
 

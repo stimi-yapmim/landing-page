@@ -85,11 +85,14 @@ export default function Navbar() {
 
             {/* Logo */}
             <a href="#" className="flex items-center group" id="brand-logo-link">
-              <img
-                src="/logo_stimi.svg"
-                alt="Logo STIMI YAPMI Makassar"
-                className="h-14 w-auto object-contain transition-transform group-hover:scale-105"
-              />
+              <picture>
+                <source srcSet="/logo_stimi_dark.png" media="(prefers-color-scheme: dark)" />
+                <img
+                  src="/logo_stimi.svg"
+                  alt="Logo STIMI YAPMI Makassar"
+                  className="h-14 w-auto object-contain transition-transform group-hover:scale-105"
+                />
+              </picture>
             </a>
 
             {/* Desktop Nav Links */}

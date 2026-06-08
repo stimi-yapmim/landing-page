@@ -1,10 +1,12 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import ProofStats from "@/components/ProofStats";
+import PartnersList from "@/components/PartnersList";
 import Programs from "@/components/Programs";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import CampusLife from "@/components/CampusLife";
 import EventsList from "@/components/EventsList";
+import LecturersCarousel from "@/components/LecturersCarousel";
 import Admissions from "@/components/Admissions";
 import Testimonials from "@/components/Testimonials";
 import NewsEvents from "@/components/NewsEvents";
@@ -61,10 +63,12 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <ProofStats />
+        <PartnersList />
         <Programs />
         <WhyChooseUs />
         <CampusLife />
         <EventsList />
+        <LecturersCarousel />
         <Admissions />
         <Testimonials />
         <NewsEvents />
