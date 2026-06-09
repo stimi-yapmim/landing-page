@@ -8,11 +8,16 @@ export const translations = {
       admissions: "Admisi",
       phone: "Admisi: 0812-4134-130",
       links: {
+        about: "Tentang",
+        welcome: "Sambutan Ketua",
+        visionMission: "Visi Misi",
+        history: "Sejarah",
         programs: "Program Studi",
         whyChooseUs: "Keunggulan",
         admissions: "Pendaftaran",
         campusLife: "Campus Life",
         events: "Agenda",
+        onlineServices: "Layanan Online",
       },
       applyNow: "Daftar Sekarang",
     },
@@ -244,7 +249,7 @@ export const translations = {
       subtitle: "Bimbingan akademis terbaik dari para ahli, praktisi industri, dan akademisi berpengalaman di STIMI YAPMI.",
       items: [
         {
-          name: "Dr. H. Dahlan, S.E., M.M.",
+          name: "Dr. Ibrahim Syah, S.E., M.M.",
           role: "Ketua STIMI YAPMI & Dosen Manajemen",
           desc: "Akademisi berpengalaman lebih dari 20 tahun dalam manajemen strategi dan kepemimpinan organisasi.",
         },
@@ -306,7 +311,111 @@ export const translations = {
       accreditation: "Terakreditasi Baik Sekali",
       privacy: "Kebijakan Privasi",
     },
-  },
+    about: {
+      welcome: {
+        title: "Sambutan Ketua STIMI YAPMI",
+        subtitle: "Pesan hangat dari Ketua STIMI YAPMI Makassar untuk para calon mahasiswa, mahasiswa aktif, dan seluruh civitas akademika.",
+        greeting: "Assalamu'alaikum Warahmatullahi Wabarakatuh,",
+        paragraphs: [
+          "Selamat datang di website resmi Sekolah Tinggi Ilmu Manajemen Indonesia (STIMI) YAPMI Makassar. Sebagai salah satu institusi pendidikan tinggi bidang manajemen yang memiliki akar sejarah panjang sejak tahun 1968, kami berkomitmen penuh untuk menyelenggarakan pendidikan berkualitas tinggi yang relevan dengan kebutuhan industri global.",
+          "Di era transformasi digital dan perkembangan ekonomi kreatif saat ini, kompetensi di bidang manajemen yang diimbangi dengan jiwa kewirausahaan (entrepreneurship) menjadi sangat krusial. Oleh karena itu, kurikulum kami dirancang secara komprehensif guna membekali mahasiswa dengan keahlian praktis, kemampuan analisis, serta kepemimpinan yang berintegritas.",
+          "Kami bangga dengan pencapaian akreditasi institusi kami yang berpredikat 'Baik Sekali' dari BAN-PT. Hal ini menjadi bukti nyata komitmen kami dalam menjaga dan meningkatkan mutu pendidikan, layanan kemahasiswaan, serta fasilitas pembelajaran.",
+          "Mari bergabung bersama kami di STIMI YAPMI Makassar untuk membentuk masa depan Anda sebagai pemimpin bisnis dan manajer yang profesional, mandiri, dan berdaya saing global.",
+        ],
+        closing: "Wassalamu'alaikum Warahmatullahi Wabarakatuh,",
+        signature: "Dr. Ibrahim Syah, S.E., M.M.",
+        role: "Ketua STIMI YAPMI Makassar",
+      },
+      visionMission: {
+        title: "Visi & Misi Kampus",
+        subtitle: "Panduan strategis kami dalam membentuk pemimpin bisnis masa depan yang kompetitif dan inovatif.",
+        vision: {
+          title: "Visi Kami",
+          text: "Menjadi perguruan tinggi terdepan dalam bidang manajemen berbasis kewirausahaan yang mandiri dan berdaya saing global pada tahun 2037.",
+        },
+        mission: {
+          title: "Misi Kami",
+          items: [
+            "Menyelenggarakan pendidikan dan pengajaran di bidang manajemen berbasis kewirausahaan untuk menghasilkan lulusan yang profesional dan mandiri.",
+            "Melaksanakan penelitian dan pengkajian ilmiah yang berkontribusi nyata bagi pengembangan ilmu manajemen dan kebutuhan masyarakat.",
+            "Melakukan pengabdian kepada masyarakat melalui penerapan ilmu manajemen untuk mendorong pemberdayaan ekonomi dan kewirausahaan lokal.",
+            "Membangun jejaring kerja sama yang luas dengan sektor industri, instansi pemerintah, dan lembaga internasional guna mendukung pengembangan karir lulusan.",
+          ],
+        },
+        goals: {
+          title: "Tujuan Strategis",
+          items: [
+            "Menghasilkan lulusan S1 Manajemen yang memiliki integritas moral tinggi, jiwa entrepreneurship, dan keterampilan manajerial yang andal.",
+            "Menghasilkan karya ilmiah bereputasi nasional maupun internasional di bidang manajemen bisnis dan kewirausahaan.",
+            "Meningkatkan peran serta civitas akademika dalam menyelesaikan permasalahan ekonomi dan bisnis di masyarakat.",
+            "Terwujudnya tata kelola perguruan tinggi yang transparan, akuntabel, dan profesional (Good Governance).",
+          ],
+        },
+      },
+      history: {
+        title: "Sejarah STIMI YAPMI",
+        subtitle: "Perjalanan lebih dari 55 tahun dalam mencetak para profesional dan pemimpin bisnis di Indonesia.",
+        timeline: [
+          {
+            year: "1968",
+            title: "APP (1968)",
+            description: "Awal mula institusi ini didirikan dengan nama Akademi Pimpinan Perusahaan (APP) di Makassar, sebagai respon terhadap kebutuhan tenaga kerja manajerial yang terus berkembang di wilayah Sulawesi Selatan.",
+          },
+          {
+            year: "1980",
+            title: "AMP (1980)",
+            description: "Guna memperluas cakupan pembelajaran dan memfokuskan fokus pada manajemen korporasi, APP resmi berubah nama menjadi Akademi Manajemen Perusahaan (AMP) Makassar.",
+          },
+          {
+            year: "1986",
+            title: "STIMI (1986)",
+            description: "Pada tanggal 27 Desember 1986, dengan terbitnya Surat Keputusan resmi, institusi ini bertransformasi menjadi Sekolah Tinggi Ilmu Manajemen Indonesia (STIMI) di bawah naungan Yayasan Pembangunan Manajemen Indonesia (YAPMI) Makassar, dan menyelenggarakan program Strata 1 (S1) Manajemen.",
+          },
+          {
+            year: "2026",
+            title: "Baik Sekali (2026)",
+            description: "Melalui proses evaluasi mutu yang ketat, STIMI YAPMI Makassar sukses meraih akreditasi institusi dengan peringkat 'Baik Sekali' dari Badan Akreditasi Nasional Perguruan Tinggi (BAN-PT), mengukuhkan posisinya sebagai kampus pilihan utama bidang manajemen.",
+          },
+        ],
+        content: [
+          "Sejak didirikan pada tahun 1968, STIMI YAPMI Makassar telah berkomitmen melayani bangsa melalui jalur pendidikan tinggi. Perjalanan lebih dari setengah abad ini membuktikan ketangguhan, relevansi, dan konsistensi institusi dalam beradaptasi menghadapi perubahan zaman, teknologi, serta tuntutan industri.",
+          "Dengan ribuan alumni yang kini berkarier sukses di berbagai sektor swasta, BUMN, instansi pemerintahan, maupun menjadi wirausahawan mandiri, STIMI YAPMI terus berinovasi dalam memutakhirkan kurikulum S1 Manajemen, meningkatkan kapasitas dosen, serta menyediakan fasilitas penunjang belajar mengajar terbaik bagi mahasiswa.",
+        ],
+      },
+    },
+    services: {
+      badge: "Layanan Digital",
+        title: "Online Services",
+        subtitle: "Portal layanan digital terintegrasi untuk memudahkan civitas akademika STIMI YAPMI Makassar.",
+        items: [
+          {
+            name: "SIAM",
+            fullname: "Sistem Informasi Akademik Mahasiswa",
+            desc: "Akses kartu rencana studi (KRS), kartu hasil studi (KHS), transkrip nilai, jadwal kuliah, dan administrasi akademik mahasiswa secara online.",
+            href: "https://siam.stimiyapmim.ac.id",
+          },
+          {
+            name: "ELSA",
+            fullname: "E-Learning STIMI YAPMI",
+            desc: "Media pembelajaran daring interaktif untuk mengakses materi perkuliahan, pengumpulan tugas, kuis, dan forum diskusi kelas virtual.",
+            href: "https://elsa.stimiyapmim.ac.id",
+          },
+          {
+            name: "DIGILIB",
+            fullname: "Digital Library",
+            desc: "Katalog perpustakaan digital untuk mengakses pustaka, artikel ilmiah, e-book, dan tugas akhir mahasiswa secara online dan mandiri.",
+            href: "https://digilib.stimiyapmim.ac.id",
+          },
+          {
+            name: "WORKFORCE E-Journal",
+            fullname: "Jurnal Manajemen & Bisnis",
+            desc: "Publikasi ilmiah berkala nasional yang memuat hasil penelitian ilmiah dosen, mahasiswa, dan praktisi di bidang manajemen dan bisnis.",
+            href: "http://journal.stimi-yapmi.ac.id/index.php/workforce",
+          },
+        ],
+        visitBtn: "Akses Layanan",
+      },
+    },
 
   // ════════════════════════════════════════
   en: {
@@ -317,11 +426,16 @@ export const translations = {
       admissions: "Admissions",
       phone: "Admissions: 0812-4134-130",
       links: {
+        about: "About",
+        welcome: "Chairman's Welcome",
+        visionMission: "Vision & Mission",
+        history: "History",
         programs: "Study Programs",
         whyChooseUs: "Why Choose Us",
         admissions: "Admissions",
         campusLife: "Campus Life",
         events: "Events",
+        onlineServices: "Online Services",
       },
       applyNow: "Apply Now",
     },
@@ -529,7 +643,7 @@ export const translations = {
       subtitle: "Outstanding academic guidance from industry experts, practitioners, and experienced academicians at STIMI YAPMI.",
       items: [
         {
-          name: "Dr. H. Dahlan, S.E., M.M.",
+          name: "Dr. Ibrahim Syah, S.E., M.M.",
           role: "Chairman of STIMI YAPMI & Management Lecturer",
           desc: "Academician with over 20 years of experience in strategic management and organizational leadership.",
         },
@@ -590,8 +704,112 @@ export const translations = {
       accreditation: "Accredited Excellent",
       privacy: "Privacy Policy",
     },
-  },
-};
+    about: {
+      welcome: {
+        title: "Chairman's Welcome",
+        subtitle: "A warm welcome message from the Chairman of STIMI YAPMI Makassar to prospective students, active students, and the entire academic community.",
+        greeting: "Assalamu'alaikum Warahmatullahi Wabarakatuh,",
+        paragraphs: [
+          "Welcome to the official website of the School of Indonesian Management Sciences (STIMI) YAPMI Makassar. As a higher education institution in management with a long history starting in 1968, we are fully committed to providing high-quality education relevant to global industrial needs.",
+          "In this era of digital transformation and creative economy development, management competence balanced with an entrepreneurial spirit is crucial. Therefore, our curriculum is comprehensively designed to equip students with practical skills, analytical thinking, and integrity-driven leadership.",
+          "We are proud of our institution's accreditation achievement, graded 'Excellent' (Baik Sekali) by BAN-PT. This is a clear testament to our commitment to maintaining and enhancing the quality of education, student services, and learning facilities.",
+          "Join us at STIMI YAPMI Makassar to shape your future as professional, independent, and globally competitive business leaders and managers.",
+        ],
+        closing: "Wassalamu'alaikum Warahmatullahi Wabarakatuh,",
+        signature: "Dr. Ibrahim Syah, S.E., M.M.",
+        role: "Chairman of STIMI YAPMI Makassar",
+      },
+      visionMission: {
+        title: "Vision & Mission",
+        subtitle: "Our strategic roadmap for cultivating competitive and innovative future business leaders.",
+        vision: {
+          title: "Our Vision",
+          text: "To become a leading higher education institution in entrepreneurship-based management that is independent and globally competitive by 2037.",
+        },
+        mission: {
+          title: "Our Mission",
+          items: [
+            "To organize entrepreneurship-based management education and instruction to produce professional and independent graduates.",
+            "To conduct scientific research and analysis that contributes tangibly to the development of management science and public needs.",
+            "To perform community service through the application of management science to foster local economic empowerment and entrepreneurship.",
+            "To build an extensive network of cooperation with the industrial sector, government bodies, and international institutions to support graduate career development.",
+          ],
+        },
+        goals: {
+          title: "Strategic Goals",
+          items: [
+            "To produce S1 Management graduates with high moral integrity, an entrepreneurial spirit, and reliable managerial skills.",
+            "To produce reputable national and international scientific works in business management and entrepreneurship.",
+            "To increase the active participation of the academic community in resolving economic and business challenges in society.",
+            "To realize transparent, accountable, and professional higher education governance (Good Governance).",
+          ],
+        },
+      },
+      history: {
+        title: "History of STIMI YAPMI",
+        subtitle: "Over 55 years of journey in molding business professionals and leaders in Indonesia.",
+        timeline: [
+          {
+            year: "1968",
+            title: "APP (1968)",
+            description: "The institution was founded as the Academy of Company Directors (APP) in Makassar to meet the growing need for managerial talent in South Sulawesi.",
+          },
+          {
+            year: "1980",
+            title: "AMP (1980)",
+            description: "To broaden the scope of study and focus more on corporate management, APP officially changed its name to the Academy of Company Management (AMP) Makassar.",
+          },
+          {
+            year: "1986",
+            title: "STIMI (1986)",
+            description: "On December 27, 1986, via an official decree, the institution transformed into the School of Indonesian Management Sciences (STIMI) under the Indonesian Management Development Foundation (YAPMI) Makassar, launching the Bachelor (S1) in Management program.",
+          },
+          {
+            year: "2026",
+            title: "Excellent (2026)",
+            description: "Through rigorous quality evaluations, STIMI YAPMI Makassar successfully achieved institutional accreditation with the 'Excellent' (Baik Sekali) grade from the National Accreditation Board for Higher Education (BAN-PT).",
+          },
+        ],
+        content: [
+          "Since its founding in 1968, STIMI YAPMI Makassar has been committed to serving the nation through higher education. This half-century journey proves our resilience, relevance, and consistency in adapting to changing times, technology, and industrial needs.",
+          "With thousands of alumni succeeding in private sectors, state enterprises, government institutions, or as independent entrepreneurs, STIMI YAPMI continuously innovates by updating the S1 Management curriculum, upgrading faculty capabilities, and providing top-tier learning facilities.",
+        ],
+      },
+    },
+    services: {
+      badge: "Digital Services",
+        title: "Online Services",
+        subtitle: "Integrated digital portal to facilitate academic and resource management for the STIMI YAPMI Makassar community.",
+        items: [
+          {
+            name: "SIAM",
+            fullname: "Student Academic Information System",
+            desc: "Access study plan cards (KRS), study result cards (KHS), grade transcripts, class schedules, and student academic records online.",
+            href: "https://siam.stimiyapmim.ac.id",
+          },
+          {
+            name: "ELSA",
+            fullname: "E-Learning STIMI YAPMI",
+            desc: "Interactive e-learning platform to access lecture materials, assignment submission, online quizzes, and virtual class discussion forums.",
+            href: "https://elsa.stimiyapmim.ac.id",
+          },
+          {
+            name: "DIGILIB",
+            fullname: "Digital Library",
+            desc: "Digital campus library catalog for accessing research materials, scientific articles, e-books, and student final theses online.",
+            href: "https://digilib.stimiyapmim.ac.id",
+          },
+          {
+            name: "WORKFORCE E-Journal",
+            fullname: "Journal of Management & Business",
+            desc: "National periodic scientific journal publishing research papers, analyses, and reviews in the fields of business and management.",
+            href: "http://journal.stimi-yapmi.ac.id/index.php/workforce",
+          },
+        ],
+        visitBtn: "Access Service",
+      },
+    },
+  };
 
 export function useT(lang) {
   return translations[lang] || translations.id;

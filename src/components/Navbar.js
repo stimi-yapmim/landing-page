@@ -1,15 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, X, Search, Phone, Globe } from "lucide-react";
+import { Menu, X, Search, Phone, Globe, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useT } from "@/lib/translations";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false);
   const { lang, setLang } = useLanguage();
   const t = useT(lang).nav;
+  const pathname = usePathname();
+  const isHomepage = pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -18,11 +24,12 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { name: t.links.programs, href: "#programs" },
-    { name: t.links.whyChooseUs, href: "#why-choose-us" },
-    { name: t.links.admissions, href: "#admissions" },
-    { name: t.links.campusLife, href: "#campus-life" },
-    { name: t.links.events, href: "#events" },
+    { name: t.links.programs, href: isHomepage ? "#programs" : "/#programs" },
+    { name: t.links.whyChooseUs, href: isHomepage ? "#why-choose-us" : "/#why-choose-us" },
+    { name: t.links.admissions, href: isHomepage ? "#admissions" : "/#admissions" },
+    { name: t.links.campusLife, href: isHomepage ? "#campus-life" : "/#campus-life" },
+    { name: t.links.events, href: isHomepage ? "#events" : "/#events" },
+    { name: t.links.onlineServices, href: isHomepage ? "#online-services" : "/#online-services" },
   ];
 
   return (
@@ -97,6 +104,59 @@ export default function Navbar() {
 
             {/* Desktop Nav Links */}
             <div className="hidden md:flex items-center gap-8">
+              {/* Dropdown Tentang */}
+              <div
+                className="relative"
+                onMouseEnter={() => setIsAboutOpen(true)}
+                onMouseLeave={() => setIsAboutOpen(false)}
+              >
+                <button
+                  onClick={() => setIsAboutOpen(!isAboutOpen)}
+                  className={`flex items-center gap-1.5 text-sm font-bold tracking-wide transition-colors cursor-pointer outline-none ${
+                    scrolled
+                      ? "text-slate-700 hover:text-brand-cyan-600 dark:text-slate-300 dark:hover:text-brand-cyan-500"
+                      : "text-slate-700 hover:text-brand-cyan-600 dark:text-slate-300 md:text-slate-100 md:hover:text-brand-cyan-400"
+                  }`}
+                  id="nav-link-about-trigger"
+                >
+                  <span>{t.links.about}</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isAboutOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {/* Dropdown panel */}
+                <div
+                  className={`absolute left-0 top-full pt-2 w-56 z-50 transition-all duration-205 origin-top-left ${
+                    isAboutOpen
+                      ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
+                      : "opacity-0 -translate-y-2 scale-95 pointer-events-none"
+                  }`}
+                >
+                  <div className="rounded-2xl bg-white dark:bg-brand-navy-900 shadow-xl border border-slate-200/50 dark:border-slate-800/50 py-2.5">
+                    <Link
+                      href="/about/welcome"
+                      className="block px-4 py-2.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-brand-navy-800 hover:text-brand-cyan-600 dark:hover:text-brand-cyan-400 transition-colors"
+                      id="dropdown-welcome-link"
+                    >
+                      {t.links.welcome}
+                    </Link>
+                    <Link
+                      href="/about/vision-mission"
+                      className="block px-4 py-2.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-brand-navy-800 hover:text-brand-cyan-600 dark:hover:text-brand-cyan-400 transition-colors"
+                      id="dropdown-vision-link"
+                    >
+                      {t.links.visionMission}
+                    </Link>
+                    <Link
+                      href="/about/history"
+                      className="block px-4 py-2.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-brand-navy-800 hover:text-brand-cyan-600 dark:hover:text-brand-cyan-400 transition-colors"
+                      id="dropdown-history-link"
+                    >
+                      {t.links.history}
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
               {navLinks.map((link) => (
                 <a
                   key={link.name}
@@ -106,7 +166,7 @@ export default function Navbar() {
                       ? "text-slate-700 hover:text-brand-cyan-600 dark:text-slate-300 dark:hover:text-brand-cyan-500"
                       : "text-slate-700 hover:text-brand-cyan-600 dark:text-slate-300 md:text-slate-100 md:hover:text-brand-cyan-400"
                   }`}
-                  id={`nav-link-${link.href.replace("#", "")}`}
+                  id={`nav-link-${link.href.replace("/", "").replace("#", "")}`}
                 >
                   {link.name}
                 </a>
@@ -186,13 +246,55 @@ export default function Navbar() {
         }`}
       >
         <div className="space-y-1.5 pb-3 pt-2">
+          {/* Mobile Dropdown Tentang */}
+          <div className="border-b border-slate-100 dark:border-slate-900/50 pb-2.5 mb-2.5">
+            <button
+              onClick={() => setIsMobileAboutOpen(!isMobileAboutOpen)}
+              className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-base font-bold text-slate-700 hover:bg-slate-50 hover:text-brand-cyan-600 dark:text-slate-300 dark:hover:bg-brand-navy-900 dark:hover:text-white"
+              id="mobile-nav-link-about-trigger"
+            >
+              <span>{t.links.about}</span>
+              <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${isMobileAboutOpen ? "rotate-180" : ""}`} />
+            </button>
+            <div
+              className={`pl-6 space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${
+                isMobileAboutOpen ? "max-h-48 mt-1 opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              <Link
+                href="/about/welcome"
+                onClick={() => setIsOpen(false)}
+                className="block rounded-lg px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-brand-cyan-600 dark:text-slate-400 dark:hover:bg-brand-navy-900 dark:hover:text-white"
+                id="mobile-dropdown-welcome-link"
+              >
+                {t.links.welcome}
+              </Link>
+              <Link
+                href="/about/vision-mission"
+                onClick={() => setIsOpen(false)}
+                className="block rounded-lg px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-brand-cyan-600 dark:text-slate-400 dark:hover:bg-brand-navy-900 dark:hover:text-white"
+                id="mobile-dropdown-vision-link"
+              >
+                {t.links.visionMission}
+              </Link>
+              <Link
+                href="/about/history"
+                onClick={() => setIsOpen(false)}
+                className="block rounded-lg px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-brand-cyan-600 dark:text-slate-400 dark:hover:bg-brand-navy-900 dark:hover:text-white"
+                id="mobile-dropdown-history-link"
+              >
+                {t.links.history}
+              </Link>
+            </div>
+          </div>
+
           {navLinks.map((link) => (
             <a
               key={link.name}
               href={link.href}
               onClick={() => setIsOpen(false)}
               className="block rounded-lg px-3 py-2.5 text-base font-bold text-slate-700 hover:bg-slate-50 hover:text-brand-cyan-600 dark:text-slate-300 dark:hover:bg-brand-navy-900 dark:hover:text-white"
-              id={`mobile-nav-link-${link.href.replace("#", "")}`}
+              id={`mobile-nav-link-${link.href.replace("/", "").replace("#", "")}`}
             >
               {link.name}
             </a>

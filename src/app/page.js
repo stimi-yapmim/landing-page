@@ -5,6 +5,7 @@ import PartnersList from "@/components/PartnersList";
 import Programs from "@/components/Programs";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import CampusLife from "@/components/CampusLife";
+import OnlineServices from "@/components/OnlineServices";
 import EventsList from "@/components/EventsList";
 import LecturersCarousel from "@/components/LecturersCarousel";
 import Admissions from "@/components/Admissions";
@@ -18,10 +19,10 @@ const jsonLd = {
   "@type": "EducationalOrganization",
   name: "STIMI YAPMI Makassar",
   alternateName: "Sekolah Tinggi Ilmu Manajemen Indonesia YAPMI Makassar",
-  url: "https://stimi-yapmi.ac.id",
+  url: "https://stimiyapmim.ac.id",
   description:
     "Sekolah Tinggi Ilmu Manajemen Indonesia (STIMI) YAPMI Makassar. Penyelenggara kuliah S1 Manajemen terakreditasi Baik Sekali oleh BAN-PT di Kota Makassar.",
-  logo: "https://stimi-yapmi.ac.id/logo.png",
+  logo: "https://stimiyapmim.ac.id/logo.png",
   address: {
     "@type": "PostalAddress",
     streetAddress: "Jl. Perintis Kemerdekaan Km. 09, Tamalanrea",
@@ -67,6 +68,7 @@ export default function Home() {
         <Programs />
         <WhyChooseUs />
         <CampusLife />
+        <OnlineServices />
         <EventsList />
         <LecturersCarousel />
         <Admissions />
