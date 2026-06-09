@@ -85,7 +85,7 @@ export default async function NewsDetailPage({ params }) {
     publisher: {
       "@type": "EducationalOrganization",
       name: "STIMI YAPMI Makassar",
-      url: "https://stimi-yapmi.ac.id",
+      url: "https://stimiyapmim.ac.id",
     },
     keywords: article.tags?.join(", "),
   };
@@ -232,7 +232,7 @@ export default async function NewsDetailPage({ params }) {
                       Bagikan:
                     </span>
                     <a
-                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://stimi-yapmi.ac.id/news/${id}`)}`}
+                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://stimiyapmim.ac.id/news/${id}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       id={`share-facebook-${id}`}
@@ -241,7 +241,7 @@ export default async function NewsDetailPage({ params }) {
                       Facebook
                     </a>
                     <a
-                      href={`https://wa.me/?text=${encodeURIComponent(`${article.title} - https://stimi-yapmi.ac.id/news/${id}`)}`}
+                      href={`https://wa.me/?text=${encodeURIComponent(`${article.title} - https://stimiyapmim.ac.id/news/${id}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       id={`share-whatsapp-${id}`}
@@ -250,7 +250,7 @@ export default async function NewsDetailPage({ params }) {
                       WhatsApp
                     </a>
                     <a
-                      href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(`https://stimi-yapmi.ac.id/news/${id}`)}`}
+                      href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(`https://stimiyapmim.ac.id/news/${id}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       id={`share-twitter-${id}`}

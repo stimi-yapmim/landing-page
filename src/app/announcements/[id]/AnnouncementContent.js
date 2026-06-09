@@ -195,7 +195,7 @@ export default function AnnouncementContent({ id, initialAnn }) {
                     {lbl.share}
                   </span>
                   <a
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://stimi-yapmi.ac.id/announcements/${id}`)}`}
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://stimiyapmim.ac.id/announcements/${id}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     id={`share-facebook-${id}`}
@@ -204,7 +204,7 @@ export default function AnnouncementContent({ id, initialAnn }) {
                     Facebook
                   </a>
                   <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`${localized.title} - https://stimi-yapmi.ac.id/announcements/${id}`)}`}
+                    href={`https://wa.me/?text=${encodeURIComponent(`${localized.title} - https://stimiyapmim.ac.id/announcements/${id}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     id={`share-whatsapp-${id}`}
@@ -213,7 +213,7 @@ export default function AnnouncementContent({ id, initialAnn }) {
                     WhatsApp
                   </a>
                   <a
-                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(localized.title)}&url=${encodeURIComponent(`https://stimi-yapmi.ac.id/announcements/${id}`)}`}
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(localized.title)}&url=${encodeURIComponent(`https://stimiyapmim.ac.id/announcements/${id}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     id={`share-twitter-${id}`}

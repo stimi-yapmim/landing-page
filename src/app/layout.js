@@ -28,7 +28,7 @@ export const metadata = {
   openGraph: {
     title: "STIMI YAPMI Makassar - Pendaftaran Mahasiswa Baru",
     description: "Bergabunglah dengan STIMI YAPMI Makassar. Program S1 Manajemen Terakreditasi Baik Sekali dengan prospek karir cemerlang.",
-    url: "https://stimi-yapmi.ac.id",
+    url: "https://stimiyapmim.ac.id",
     siteName: "STIMI YAPMI Makassar",
     locale: "id_ID",
     type: "website",

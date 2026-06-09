@@ -406,11 +406,11 @@ export const translations = {
             desc: "Katalog perpustakaan digital untuk mengakses pustaka, artikel ilmiah, e-book, dan tugas akhir mahasiswa secara online dan mandiri.",
             href: "https://digilib.stimiyapmim.ac.id",
           },
-          {
+          {  
             name: "WORKFORCE E-Journal",
             fullname: "Jurnal Manajemen & Bisnis",
             desc: "Publikasi ilmiah berkala nasional yang memuat hasil penelitian ilmiah dosen, mahasiswa, dan praktisi di bidang manajemen dan bisnis.",
-            href: "http://journal.stimi-yapmi.ac.id/index.php/workforce",
+            href: "http://journal.stimiyapmim.ac.id/index.php/workforce",
           },
         ],
         visitBtn: "Akses Layanan",
@@ -803,7 +803,7 @@ export const translations = {
             name: "WORKFORCE E-Journal",
             fullname: "Journal of Management & Business",
             desc: "National periodic scientific journal publishing research papers, analyses, and reviews in the fields of business and management.",
-            href: "http://journal.stimi-yapmi.ac.id/index.php/workforce",
+            href: "http://journal.stimiyapmim.ac.id/index.php/workforce",
           },
         ],
         visitBtn: "Access Service",

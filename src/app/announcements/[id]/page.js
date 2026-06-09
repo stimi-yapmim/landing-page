@@ -57,7 +57,7 @@ export default async function AnnouncementDetailPage({ params }) {
     publisher: {
       "@type": "EducationalOrganization",
       name: "STIMI YAPMI Makassar",
-      url: "https://stimi-yapmi.ac.id",
+      url: "https://stimiyapmim.ac.id",
     },
     keywords: announcement.id.tags?.join(", "),
   };

@@ -61,7 +61,7 @@ function generateSlug(title) {
 export async function getAllArticlesAction() {
   try {
     const client = await clientPromise;
-    const db = client.db("stimi-yapmi");
+    const db = client.db("humas-stimi");
     const collection = db.collection("articles");
 
     const count = await collection.countDocuments();
@@ -92,7 +92,7 @@ export async function getAllArticlesAction() {
 export async function getArticleByIdAction(id) {
   try {
     const client = await clientPromise;
-    const db = client.db("stimi-yapmi");
+    const db = client.db("humas-stimi");
     const collection = db.collection("articles");
 
     const doc = await collection.findOne({ _id: id });
@@ -118,7 +118,7 @@ export async function getArticleByIdAction(id) {
 export async function createArticleAction(data) {
   try {
     const client = await clientPromise;
-    const db = client.db("stimi-yapmi");
+    const db = client.db("humas-stimi");
     const collection = db.collection("articles");
 
     const title = data.title || "Judul Berita Baru";
@@ -192,7 +192,7 @@ export async function createArticleAction(data) {
 export async function updateArticleAction(id, data) {
   try {
     const client = await clientPromise;
-    const db = client.db("stimi-yapmi");
+    const db = client.db("humas-stimi");
     const collection = db.collection("articles");
 
     // Use HTML content string directly from rich editor
@@ -260,7 +260,7 @@ export async function updateArticleAction(id, data) {
 export async function deleteArticleAction(id) {
   try {
     const client = await clientPromise;
-    const db = client.db("stimi-yapmi");
+    const db = client.db("humas-stimi");
     const collection = db.collection("articles");
 
     const result = await collection.deleteOne({ _id: id });
