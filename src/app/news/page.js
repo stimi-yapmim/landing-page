@@ -3,7 +3,9 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Calendar, User, Clock, ArrowRight, Search, Tag, ArrowLeft, BookOpen } from "lucide-react";
-import { getAllArticles, getCategories } from "@/lib/articles";
+import { getAllArticles as getAllArticlesMock } from "@/lib/articles";
+import { getAllArticlesAction } from "@/app/actions/newsActions";
+import { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -40,8 +42,18 @@ function ArticleCardFeatured({ article }) {
       <div
         className={`relative w-full lg:w-5/12 min-h-[240px] lg:min-h-[360px] bg-gradient-to-br ${article.coverGradient} flex-shrink-0 overflow-hidden`}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(#ffffff07_1px,transparent_1px)] [background-size:18px_18px]" />
-        <div className="absolute inset-0 flex flex-col items-start justify-end p-8 gap-3">
+        {article.coverImage && (
+          <>
+            <img
+              src={article.coverImage}
+              alt={article.title}
+              className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-black/45" />
+          </>
+        )}
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff07_1px,transparent_1px)] [background-size:18px_18px] z-10" />
+        <div className="absolute inset-0 flex flex-col items-start justify-end p-8 gap-3 z-20">
           <CategoryBadge category={article.category} color={article.categoryColor} />
           <div className="flex items-center gap-2 text-[10px] font-semibold text-white/60">
             <Calendar className="h-3.5 w-3.5" />
@@ -53,7 +65,7 @@ function ArticleCardFeatured({ article }) {
         </div>
         {/* Accent glow top-right */}
         <div
-          className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-30 -translate-y-1/3 translate-x-1/3"
+          className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-30 -translate-y-1/3 translate-x-1/3 z-10"
           style={{ backgroundColor: article.coverAccent }}
         />
       </div>
@@ -94,12 +106,24 @@ function ArticleCard({ article }) {
       <div
         className={`relative h-44 bg-gradient-to-br ${article.coverGradient} flex items-end p-5 overflow-hidden flex-shrink-0`}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(#ffffff07_1px,transparent_1px)] [background-size:16px_16px]" />
+        {article.coverImage && (
+          <>
+            <img
+              src={article.coverImage}
+              alt={article.title}
+              className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-black/30" />
+          </>
+        )}
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff07_1px,transparent_1px)] [background-size:16px_16px] z-10" />
         <div
-          className="absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl opacity-30 -translate-y-1/3 translate-x-1/3"
+          className="absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl opacity-30 -translate-y-1/3 translate-x-1/3 z-10"
           style={{ backgroundColor: article.coverAccent }}
         />
-        <CategoryBadge category={article.category} color={article.categoryColor} small />
+        <div className="relative z-20">
+          <CategoryBadge category={article.category} color={article.categoryColor} small />
+        </div>
       </div>
 
       {/* Content */}
@@ -140,10 +164,30 @@ function ArticleCard({ article }) {
 }
 
 export default function NewsIndexPage() {
-  const allArticles = getAllArticles();
-  const categories = getCategories();
+  const [allArticles, setAllArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    async function loadArticles() {
+      try {
+        const data = await getAllArticlesAction();
+        setAllArticles(data);
+      } catch (err) {
+        console.error("Failed to load articles from DB:", err);
+        setAllArticles(getAllArticlesMock());
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadArticles();
+  }, []);
+
+  const categories = useMemo(() => {
+    const cats = new Set(allArticles.map((a) => a.category));
+    return ["Semua", ...Array.from(cats)];
+  }, [allArticles]);
 
   const filteredArticles = useMemo(() => {
     return allArticles.filter((a) => {
@@ -161,6 +205,21 @@ export default function NewsIndexPage() {
 
   const featuredArticle = filteredArticles[0];
   const restArticles = filteredArticles.slice(1);
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <main className="flex-1 bg-slate-50 dark:bg-brand-navy-950 min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-brand-cyan-500 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+            <p className="mt-4 text-sm font-bold text-slate-500 dark:text-slate-400">Memuat berita terbaru...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>

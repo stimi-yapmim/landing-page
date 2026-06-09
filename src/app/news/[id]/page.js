@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import NavbarWrapper from "./NavbarWrapper";
 import Footer from "@/components/Footer";
-import { articles, getRelatedArticles } from "@/lib/articles";
+import { getArticleByIdAction, getAllArticlesAction } from "@/app/actions/newsActions";
 
 // Category badge styles per color token
 const categoryStyles = {
@@ -26,12 +26,19 @@ const categoryStyles = {
 };
 
 export async function generateStaticParams() {
-  return Object.keys(articles).map((id) => ({ id }));
+  try {
+    const list = await getAllArticlesAction();
+    return list.map((a) => ({ id: a.id }));
+  } catch (err) {
+    console.error("Static params fallback:", err);
+    const { articles: mockArticles } = await import("@/lib/articles");
+    return Object.keys(mockArticles).map((id) => ({ id }));
+  }
 }
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
-  const article = articles[id];
+  const article = await getArticleByIdAction(id);
 
   if (!article) {
     return { title: "Berita Tidak Ditemukan - STIMI YAPMI Makassar" };
@@ -59,11 +66,12 @@ export async function generateMetadata({ params }) {
 
 export default async function NewsDetailPage({ params }) {
   const { id } = await params;
-  const article = articles[id];
+  const article = await getArticleByIdAction(id);
 
   if (!article) notFound();
 
-  const relatedArticles = getRelatedArticles(id, 3);
+  const allArticles = await getAllArticlesAction();
+  const relatedArticles = allArticles.filter((a) => a.id !== id).slice(0, 3);
   const badgeStyle = categoryStyles[article.categoryColor] || categoryStyles.cyan;
 
   // JSON-LD for SEO
@@ -97,16 +105,26 @@ export default async function NewsDetailPage({ params }) {
         <div
           className={`relative pt-32 pb-14 bg-gradient-to-br ${article.coverGradient} overflow-hidden`}
         >
-          <div className="absolute inset-0 bg-[radial-gradient(#ffffff06_1px,transparent_1px)] [background-size:18px_18px]" />
+          {article.coverImage && (
+            <>
+              <img
+                src={article.coverImage}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover opacity-20 pointer-events-none"
+              />
+              <div className="absolute inset-0 bg-brand-navy-950/15 pointer-events-none" />
+            </>
+          )}
+          <div className="absolute inset-0 bg-[radial-gradient(#ffffff06_1px,transparent_1px)] [background-size:18px_18px] z-10" />
           <div
-            className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-3xl opacity-25 -translate-y-1/3 translate-x-1/3"
+            className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-3xl opacity-25 -translate-y-1/3 translate-x-1/3 z-10"
             style={{ backgroundColor: article.coverAccent }}
           />
-          <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-3xl opacity-20 translate-y-1/2 -translate-x-1/4"
+          <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-3xl opacity-20 translate-y-1/2 -translate-x-1/4 z-10"
             style={{ backgroundColor: article.coverAccent }}
           />
 
-          <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="relative z-20 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             {/* Breadcrumbs */}
             <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-white/50 mb-6">
               <Link href="/" className="hover:text-white/80 transition-colors">Beranda</Link>
@@ -115,7 +133,7 @@ export default async function NewsDetailPage({ params }) {
               <ChevronRight className="h-3.5 w-3.5" />
               <span className="text-white/70 line-clamp-1 max-w-xs">{article.title}</span>
             </nav>
-
+ 
             {/* Category badge */}
             <div className="mb-5">
               <span
@@ -124,12 +142,12 @@ export default async function NewsDetailPage({ params }) {
                 {article.category}
               </span>
             </div>
-
+ 
             {/* Title */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight">
               {article.title}
             </h1>
-
+ 
             {/* Meta */}
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-semibold text-white/60">
               <span className="flex items-center gap-1.5">
@@ -179,11 +197,15 @@ export default async function NewsDetailPage({ params }) {
                     {article.excerpt}
                   </p>
 
-                  {/* Body Paragraphs */}
-                  <div className="space-y-6 text-slate-600 dark:text-slate-300 text-[15px] leading-[1.9] font-sans">
-                    {article.content.map((paragraph, index) => (
-                      <p key={index}>{paragraph}</p>
-                    ))}
+                   {/* Body Content */}
+                  <div className="space-y-6 text-slate-600 dark:text-slate-300 text-[15px] leading-[1.9] font-sans prose dark:prose-invert max-w-none prose-slate prose-headings:font-black prose-headings:text-brand-navy-950 dark:prose-headings:text-white prose-a:text-brand-cyan-500 hover:prose-a:text-brand-cyan-400 prose-blockquote:border-l-4 prose-blockquote:border-brand-cyan-500 prose-blockquote:pl-4 prose-blockquote:italic">
+                    {Array.isArray(article.content) ? (
+                      article.content.map((paragraph, index) => (
+                        <p key={index} dangerouslySetInnerHTML={{ __html: paragraph }} />
+                      ))
+                    ) : (
+                      <div dangerouslySetInnerHTML={{ __html: article.content }} />
+                    )}
                   </div>
 
                   {/* Tags */}
@@ -256,8 +278,18 @@ export default async function NewsDetailPage({ params }) {
                         className="group flex items-start gap-4 bg-white dark:bg-brand-navy-900 rounded-2xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-800/50 hover:shadow-md transition-shadow"
                       >
                         <div
-                          className={`shrink-0 h-14 w-14 rounded-xl bg-gradient-to-br ${other.coverGradient} flex items-center justify-center`}
-                        />
+                          className={`shrink-0 h-14 w-14 rounded-xl bg-gradient-to-br ${other.coverGradient} flex items-center justify-center overflow-hidden relative`}
+                        >
+                          {other.coverImage ? (
+                            <img
+                              src={other.coverImage}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 bg-[radial-gradient(#ffffff07_1px,transparent_1px)] [background-size:8px_8px]" />
+                          )}
+                        </div>
                         <div>
                           <span className="text-[10px] font-black text-brand-cyan-600 dark:text-brand-cyan-400 uppercase tracking-widest">
                             {other.category}

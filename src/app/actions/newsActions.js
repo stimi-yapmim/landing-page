@@ -1,0 +1,311 @@
+"use server";
+
+import clientPromise from "@/lib/mongodb";
+import { revalidatePath } from "next/cache";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
+
+// Helper function: Map Mongo _id to id string for codebase compatibility
+function mapDocument(doc) {
+  if (!doc) return null;
+  const { _id, ...rest } = doc;
+  return { id: _id.toString(), ...rest };
+}
+
+// Helper: Format today's date in Indonesian style
+function formatIndoDate(date) {
+  const d = new Date(date);
+  const day = d.getDate().toString().padStart(2, "0");
+  const months = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
+  const month = months[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day} ${month} ${year}`;
+}
+
+// Helper: Strip HTML tags to get clean plain text
+function stripHtmlTags(html) {
+  if (!html) return "";
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Helper: Estimate reading time based on content (array or string)
+function estimateReadingTime(content) {
+  let text = "";
+  if (Array.isArray(content)) {
+    text = content.join(" ");
+  } else {
+    text = stripHtmlTags(content);
+  }
+  const words = text.split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.ceil(words / 200));
+  return `${minutes} menit`;
+}
+
+// Helper: Generate URL slug from title
+function generateSlug(title) {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// 1. Get All Articles (with Seeding)
+export async function getAllArticlesAction() {
+  try {
+    const client = await clientPromise;
+    const db = client.db("stimi-yapmi");
+    const collection = db.collection("articles");
+
+    const count = await collection.countDocuments();
+    if (count === 0) {
+      // Seed Database with mock data if empty
+      const { articles: staticArticles } = await import("@/lib/articles");
+      const seedData = Object.entries(staticArticles).map(([id, data]) => ({
+        _id: id,
+        ...data,
+      }));
+      await collection.insertMany(seedData);
+      console.log("Database seeded successfully with static articles.");
+    }
+
+    const docs = await collection.find({}).toArray();
+    return docs
+      .map(mapDocument)
+      .sort((a, b) => new Date(b.dateISO) - new Date(a.dateISO));
+  } catch (error) {
+    console.error("Failed to fetch articles from MongoDB:", error);
+    // Fallback to static mock articles
+    const { getAllArticles } = await import("@/lib/articles");
+    return getAllArticles();
+  }
+}
+
+// 2. Get Article By ID / Slug
+export async function getArticleByIdAction(id) {
+  try {
+    const client = await clientPromise;
+    const db = client.db("stimi-yapmi");
+    const collection = db.collection("articles");
+
+    const doc = await collection.findOne({ _id: id });
+    if (doc) return mapDocument(doc);
+
+    // Fallback search in static list
+    const { articles: staticArticles } = await import("@/lib/articles");
+    if (staticArticles[id]) {
+      return { id, ...staticArticles[id] };
+    }
+    return null;
+  } catch (error) {
+    console.error(`Failed to fetch article with ID ${id}:`, error);
+    const { articles: staticArticles } = await import("@/lib/articles");
+    if (staticArticles[id]) {
+      return { id, ...staticArticles[id] };
+    }
+    return null;
+  }
+}
+
+// 3. Create Article
+export async function createArticleAction(data) {
+  try {
+    const client = await clientPromise;
+    const db = client.db("stimi-yapmi");
+    const collection = db.collection("articles");
+
+    const title = data.title || "Judul Berita Baru";
+    let slug = generateSlug(title);
+
+    // Ensure slug is unique
+    let existing = await collection.findOne({ _id: slug });
+    let counter = 1;
+    while (existing) {
+      slug = `${generateSlug(title)}-${counter}`;
+      existing = await collection.findOne({ _id: slug });
+      counter++;
+    }
+
+    const today = new Date();
+    const dateISO = today.toISOString().split("T")[0];
+    const dateStr = formatIndoDate(today);
+
+    // Use HTML content string directly from rich editor
+    const content = data.content || "<p>Konten berita.</p>";
+
+    // Calculate plain text for excerpt
+    const plainText = stripHtmlTags(content);
+    const excerpt = data.excerpt || (plainText ? plainText.substring(0, 150) + "..." : "");
+
+    const tags = data.tags
+      ? data.tags.split(",").map(t => t.trim()).filter(Boolean)
+      : [];
+
+    const categoryColorMap = {
+      "Akademik": "cyan",
+      "Kuliah Umum": "gold",
+      "Pendaftaran": "emerald",
+      "Fasilitas": "purple",
+      "Beasiswa": "orange",
+      "Wisuda": "cyan",
+    };
+    const categoryColor = categoryColorMap[data.category] || "cyan";
+
+    const newDoc = {
+      _id: slug,
+      title,
+      category: data.category || "Akademik",
+      categoryColor,
+      date: dateStr,
+      dateISO,
+      author: data.author || "Humas STIMI YAPMI",
+      readingTime: estimateReadingTime(content),
+      excerpt,
+      coverGradient: data.coverGradient || "from-brand-navy-950 via-brand-navy-800 to-brand-cyan-600",
+      coverAccent: data.coverAccent || "#00bacf",
+      coverImage: data.coverImage || "",
+      content,
+      tags,
+    };
+
+    await collection.insertOne(newDoc);
+
+    revalidatePath("/");
+    revalidatePath("/news");
+    revalidatePath(`/news/${slug}`);
+
+    return { success: true, slug };
+  } catch (error) {
+    console.error("Failed to create article:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// 4. Update Article
+export async function updateArticleAction(id, data) {
+  try {
+    const client = await clientPromise;
+    const db = client.db("stimi-yapmi");
+    const collection = db.collection("articles");
+
+    // Use HTML content string directly from rich editor
+    const content = data.content || "<p>Konten berita.</p>";
+
+    // Calculate plain text for excerpt if needed
+    const plainText = stripHtmlTags(content);
+    const excerpt = data.excerpt || (plainText ? plainText.substring(0, 150) + "..." : "");
+
+    const tags = data.tags
+      ? data.tags.split(",").map(t => t.trim()).filter(Boolean)
+      : [];
+
+    const categoryColorMap = {
+      "Akademik": "cyan",
+      "Kuliah Umum": "gold",
+      "Pendaftaran": "emerald",
+      "Fasilitas": "purple",
+      "Beasiswa": "orange",
+      "Wisuda": "cyan",
+    };
+    const categoryColor = categoryColorMap[data.category] || "cyan";
+
+    const updateFields = {
+      title: data.title,
+      category: data.category || "Akademik",
+      categoryColor,
+      author: data.author || "Humas STIMI YAPMI",
+      readingTime: estimateReadingTime(content),
+      excerpt,
+      coverGradient: data.coverGradient || "from-brand-navy-950 via-brand-navy-800 to-brand-cyan-600",
+      coverAccent: data.coverAccent || "#00bacf",
+      coverImage: data.coverImage,
+      content,
+      tags,
+    };
+
+    // If date ISO is provided, keep it, otherwise do not update dates to preserve publish times
+    if (data.dateISO) {
+      updateFields.dateISO = data.dateISO;
+      updateFields.date = formatIndoDate(new Date(data.dateISO));
+    }
+
+    const result = await collection.updateOne(
+      { _id: id },
+      { $set: updateFields }
+    );
+
+    if (result.matchedCount === 0) {
+      return { success: false, error: "Article not found in database" };
+    }
+
+    revalidatePath("/");
+    revalidatePath("/news");
+    revalidatePath(`/news/${id}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error(`Failed to update article ${id}:`, error);
+    return { success: false, error: error.message };
+  }
+}
+
+// 5. Delete Article
+export async function deleteArticleAction(id) {
+  try {
+    const client = await clientPromise;
+    const db = client.db("stimi-yapmi");
+    const collection = db.collection("articles");
+
+    const result = await collection.deleteOne({ _id: id });
+
+    if (result.deletedCount === 0) {
+      return { success: false, error: "Article not found in database" };
+    }
+
+    revalidatePath("/");
+    revalidatePath("/news");
+    revalidatePath(`/news/${id}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error(`Failed to delete article ${id}:`, error);
+    return { success: false, error: error.message };
+  }
+}
+
+// 6. Upload Content Image to public/images
+export async function uploadImageAction(base64Data) {
+  try {
+    const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return { success: false, error: "Format base64 salah." };
+    }
+    
+    const mimeType = matches[1];
+    const base64Buffer = Buffer.from(matches[2], "base64");
+    
+    let ext = "png";
+    if (mimeType.includes("jpeg") || mimeType.includes("jpg")) ext = "jpg";
+    else if (mimeType.includes("gif")) ext = "gif";
+    else if (mimeType.includes("webp")) ext = "webp";
+    
+    const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+    const imagesDir = join(process.cwd(), "public", "images");
+    await mkdir(imagesDir, { recursive: true });
+    
+    const filePath = join(imagesDir, uniqueName);
+    await writeFile(filePath, base64Buffer);
+    
+    return { success: true, url: `/images/${uniqueName}` };
+  } catch (error) {
+    console.error("Failed to write image file:", error);
+    return { success: false, error: error.message };
+  }
+}
