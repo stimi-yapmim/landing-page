@@ -60,12 +60,12 @@ const categoryStyles = {
   admissions: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
 };
 
-export default function AnnouncementContent({ id, initialAnn }) {
+export default function AnnouncementContent({ id, initialAnn, relatedAnnouncements = [] }) {
   const { lang } = useLanguage();
   const lbl = labels[lang] || labels.id;
   
   // Dynamic lookup
-  const announcement = announcements[id] || initialAnn;
+  const announcement = initialAnn || announcements[id];
   if (!announcement) return null;
 
   // Language-specific details
@@ -73,7 +73,7 @@ export default function AnnouncementContent({ id, initialAnn }) {
   const displayDate = lang === "en" ? announcement.dateEN : announcement.date;
   const displayReadingTime = lang === "en" ? announcement.readingTimeEN : announcement.readingTime;
 
-  const relatedList = getRelatedAnnouncements(id, 2);
+  const relatedList = relatedAnnouncements.length > 0 ? relatedAnnouncements : getRelatedAnnouncements(id, 2);
   const badgeStyle = categoryStyles[localized.category.toLowerCase()] || categoryStyles.perpustakaan;
 
   return (
@@ -231,30 +231,36 @@ export default function AnnouncementContent({ id, initialAnn }) {
           <aside className="lg:col-span-4 space-y-7 sticky top-24">
 
             {/* Official PDF Document Downloads */}
-            <div className="bg-white dark:bg-brand-navy-900 rounded-3xl p-6 shadow-sm border border-slate-200/50 dark:border-slate-800/50">
-              <h3 className="text-xs font-black text-brand-navy-950 dark:text-white uppercase tracking-wider mb-4 pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-brand-cyan-500" />
-                {lbl.docHeader}
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{lbl.docSub}</p>
-              
-              <a
-                href="#"
-                onClick={(e) => { e.preventDefault(); alert("Unduh dokumen PDF pengumuman..."); }}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-brand-navy-950 group transition-colors border border-slate-100 dark:border-slate-800"
-              >
-                <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-brand-cyan-100 text-brand-cyan-600 dark:bg-brand-cyan-600/10 dark:text-brand-cyan-400 shrink-0">
-                  <FileText className="h-5 w-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-brand-cyan-600 transition-colors truncate">
-                    SK_Pengumuman.pdf
-                  </h4>
-                  <p className="text-[10px] text-slate-400 mt-0.5">PDF • 1.5 MB</p>
-                </div>
-                <Download className="h-4 w-4 text-slate-400 group-hover:text-brand-cyan-600 ml-auto transition-colors shrink-0" />
-              </a>
-            </div>
+            {announcement.attachmentUrl && (
+              <div className="bg-white dark:bg-brand-navy-900 rounded-3xl p-6 shadow-sm border border-slate-200/50 dark:border-slate-800/50">
+                <h3 className="text-xs font-black text-brand-navy-950 dark:text-white uppercase tracking-wider mb-4 pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-brand-cyan-500" />
+                  {lbl.docHeader}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{lbl.docSub}</p>
+                
+                <a
+                  href={announcement.attachmentUrl}
+                  download={announcement.attachmentName || "SK_Pengumuman.pdf"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-brand-navy-950 group transition-colors border border-slate-100 dark:border-slate-800"
+                >
+                  <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-brand-cyan-100 text-brand-cyan-600 dark:bg-brand-cyan-600/10 dark:text-brand-cyan-400 shrink-0">
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-brand-cyan-600 transition-colors truncate">
+                      {announcement.attachmentName || "SK_Pengumuman.pdf"}
+                    </h4>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      {announcement.attachmentSize || "PDF"}
+                    </p>
+                  </div>
+                  <Download className="h-4 w-4 text-slate-400 group-hover:text-brand-cyan-600 ml-auto transition-colors shrink-0" />
+                </a>
+              </div>
+            )}
 
             {/* Related announcements (desktop sidebar) */}
             {relatedList.length > 0 && (

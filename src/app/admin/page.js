@@ -13,12 +13,15 @@ import {
   Edit2, 
   Trash2,
   AlertCircle,
-  Tag
+  Tag,
+  Megaphone
 } from "lucide-react";
 import { getAllArticlesAction, deleteArticleAction } from "@/app/actions/newsActions";
+import { getAllAnnouncementsAction } from "@/app/actions/announcementActions";
 
 export default function AdminDashboardHome() {
   const [articles, setArticles] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -26,8 +29,12 @@ export default function AdminDashboardHome() {
   const loadStats = async () => {
     setLoading(true);
     try {
-      const data = await getAllArticlesAction();
-      setArticles(data);
+      const [articlesData, announcementsData] = await Promise.all([
+        getAllArticlesAction(),
+        getAllAnnouncementsAction()
+      ]);
+      setArticles(articlesData);
+      setAnnouncements(announcementsData);
     } catch (err) {
       console.error(err);
       setError("Gagal sinkronisasi data dari MongoDB.");
@@ -60,7 +67,7 @@ export default function AdminDashboardHome() {
   };
 
   const totalNews = articles.length;
-  const categoriesCount = new Set(articles.map(a => a.category)).size;
+  const totalAnnouncements = announcements.length;
   const recentArticles = articles.slice(0, 5); // display 5 most recent
 
   return (
@@ -122,17 +129,17 @@ export default function AdminDashboardHome() {
         <div className="bg-white dark:bg-brand-navy-900 rounded-2xl p-6 shadow-sm border border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between">
           <div className="space-y-2">
             <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
-              Kategori Aktif
+              Total Pengumuman
             </span>
             <h3 className="text-3xl font-black text-brand-navy-950 dark:text-white">
-              {loading ? <LoaderIndicator /> : categoriesCount}
+              {loading ? <LoaderIndicator /> : totalAnnouncements}
             </h3>
             <p className="text-[10px] font-bold text-slate-450 dark:text-slate-400">
-              Pengelompokan berita
+              Pengumuman akademik & SK
             </p>
           </div>
           <div className="h-12 w-12 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-550">
-            <Tag className="h-6 w-6" />
+            <Megaphone className="h-6 w-6" />
           </div>
         </div>
 
@@ -169,14 +176,14 @@ export default function AdminDashboardHome() {
           Pintasan Aksi Cepat
         </h3>
         
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             href="/admin/news/new"
             className="flex items-center justify-between p-4 rounded-2xl bg-brand-cyan-500 hover:bg-brand-cyan-600 text-white font-extrabold transition-all group"
           >
             <div className="flex items-center gap-3">
               <Plus className="h-5 w-5 shrink-0" />
-              <span className="text-xs uppercase tracking-wider">Tulis Berita Baru</span>
+              <span className="text-xs uppercase tracking-wider">Tulis Berita</span>
             </div>
             <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
           </Link>
@@ -187,19 +194,29 @@ export default function AdminDashboardHome() {
           >
             <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 shrink-0 text-brand-cyan-500" />
-              <span className="text-xs uppercase tracking-wider font-extrabold">Semua Daftar Berita</span>
+              <span className="text-xs uppercase tracking-wider font-extrabold">Kelola Berita</span>
             </div>
             <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
           </Link>
 
           <Link
-            href="/"
-            target="_blank"
+            href="/admin/announcements/new"
+            className="flex items-center justify-between p-4 rounded-2xl bg-brand-cyan-550 hover:bg-brand-cyan-650 text-white font-extrabold transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <Plus className="h-5 w-5 shrink-0" />
+              <span className="text-xs uppercase tracking-wider">Tulis Pengumuman</span>
+            </div>
+            <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+          </Link>
+
+          <Link
+            href="/admin/announcements"
             className="flex items-center justify-between p-4 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-brand-navy-800 dark:hover:bg-brand-navy-750 text-slate-800 dark:text-white font-extrabold transition-all group border border-slate-200/40 dark:border-slate-700/30"
           >
             <div className="flex items-center gap-3">
-              <Globe className="h-5 w-5 shrink-0 text-amber-500" />
-              <span className="text-xs uppercase tracking-wider font-extrabold">Lihat Web Publik</span>
+              <Megaphone className="h-5 w-5 shrink-0 text-brand-cyan-500" />
+              <span className="text-xs uppercase tracking-wider font-extrabold">Kelola Pengumuman</span>
             </div>
             <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
           </Link>

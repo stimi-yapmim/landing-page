@@ -39,20 +39,14 @@ export default function Admissions() {
               ))}
             </ul>
 
-            <div className="mt-10 relative w-full aspect-[16/10] overflow-hidden rounded-3xl bg-white shadow-lg border border-slate-200/50 dark:border-slate-800/50">
+            <div className="mt-10 relative w-full aspect-[16/10] overflow-hidden rounded-3xl bg-slate-50 dark:bg-brand-navy-900 shadow-lg border border-slate-200/50 dark:border-slate-800/50">
               <Image
-                src="/hero-campus.png"
+                src="/alur_pendaftaran_transparrent.png"
                 alt={t.imageAlt}
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
-                className="object-cover transition-transform duration-700 hover:scale-105"
+                className="object-contain p-6 transition-transform duration-700 hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-navy-950/70 to-transparent flex items-end p-6">
-                <div className="flex items-center gap-3 text-white">
-                  <img src="/logo_stimi.svg" alt="" className="h-7 w-auto object-contain brightness-0 invert opacity-90 shrink-0" />
-                  <span className="text-xs font-bold uppercase tracking-wider">{t.imageCaption}</span>
-                </div>
-              </div>
             </div>
           </div>
 

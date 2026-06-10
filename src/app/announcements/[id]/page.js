@@ -2,23 +2,30 @@ import { notFound } from "next/navigation";
 import NavbarWrapper from "./NavbarWrapper";
 import Footer from "@/components/Footer";
 import AnnouncementContent from "./AnnouncementContent";
-import { announcements } from "@/lib/announcements";
+import { getAnnouncementBySlugAction, getAllAnnouncementsAction } from "@/app/actions/announcementActions";
 
 // Define static params for Next.js to pre-render the pages at build time
 export async function generateStaticParams() {
-  return Object.keys(announcements).map((id) => ({ id }));
+  try {
+    const list = await getAllAnnouncementsAction();
+    return list.map((a) => ({ id: a.slug }));
+  } catch (err) {
+    console.error("Static params fallback:", err);
+    const { announcements: mockAnnouncements } = await import("@/lib/announcements");
+    return Object.keys(mockAnnouncements).map((id) => ({ id }));
+  }
 }
 
 // Generate SEO Metadata dynamically
 export async function generateMetadata({ params }) {
   const { id } = await params;
-  const announcement = announcements[id];
+  const announcement = await getAnnouncementBySlugAction(id);
 
   if (!announcement) {
     return { title: "Pengumuman Tidak Ditemukan - STIMI YAPMI Makassar" };
   }
 
-  const localized = announcement.id; // Default to ID for search metadata
+  const localized = announcement.id || announcement.en;
 
   return {
     title: `${localized.title} | STIMI YAPMI Makassar`,
@@ -42,16 +49,21 @@ export async function generateMetadata({ params }) {
 
 export default async function AnnouncementDetailPage({ params }) {
   const { id } = await params;
-  const announcement = announcements[id];
+  const announcement = await getAnnouncementBySlugAction(id);
 
   if (!announcement) notFound();
+
+  const allAnn = await getAllAnnouncementsAction();
+  const relatedAnnouncements = allAnn.filter((a) => a.slug !== id).slice(0, 2);
+
+  const localized = announcement.id || announcement.en;
 
   // JSON-LD schema for search engines (SEO)
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
-    headline: announcement.id.title,
-    description: announcement.id.excerpt,
+    headline: localized.title,
+    description: localized.excerpt,
     datePublished: announcement.dateISO,
     author: { "@type": "Organization", name: announcement.author },
     publisher: {
@@ -59,7 +71,7 @@ export default async function AnnouncementDetailPage({ params }) {
       name: "STIMI YAPMI Makassar",
       url: "https://stimiyapmim.ac.id",
     },
-    keywords: announcement.id.tags?.join(", "),
+    keywords: localized.tags?.join(", "),
   };
 
   return (
@@ -72,7 +84,11 @@ export default async function AnnouncementDetailPage({ params }) {
 
       <NavbarWrapper />
 
-      <AnnouncementContent id={id} initialAnn={announcement} />
+      <AnnouncementContent 
+        id={id} 
+        initialAnn={announcement} 
+        relatedAnnouncements={relatedAnnouncements} 
+      />
 
       <Footer />
     </>

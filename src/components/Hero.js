@@ -1,13 +1,47 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Play, Calendar, Download, FileText } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useT } from "@/lib/translations";
+import { getAllAnnouncementsAction } from "@/app/actions/announcementActions";
 
 export default function Hero() {
   const { lang } = useLanguage();
   const t = useT(lang).hero;
+
+  const [notices, setNotices] = useState(t.notices || []);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadNotices() {
+      try {
+        const data = await getAllAnnouncementsAction();
+        if (data && data.length > 0) {
+          const mapped = data.slice(0, 3).map(item => {
+            const loc = item[lang] || item.id;
+            return {
+              id: item.slug,
+              title: loc.title,
+              date: lang === "en" ? item.dateEN : item.date,
+              docId: item.docId
+            };
+          });
+          setNotices(mapped);
+        } else {
+          setNotices(t.notices);
+        }
+      } catch (err) {
+        console.error("Failed to load announcements on Hero:", err);
+        setNotices(t.notices);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadNotices();
+  }, [lang, t.notices]);
+
 
   return (
     <section className="relative min-h-screen flex items-center pt-24 pb-20 bg-brand-navy-900 overflow-hidden" id="hero">
@@ -66,7 +100,7 @@ export default function Hero() {
               </div>
 
               <div className="divide-y divide-slate-100 dark:divide-slate-800 px-6 py-4">
-                {t.notices.map((notice, i) => (
+                {notices.map((notice, i) => (
                   <div key={i} className="py-4 first:pt-1 last:pb-1">
                     <Link href={`/announcements/${notice.id}`}>
                       <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 hover:text-brand-cyan-600 dark:hover:text-brand-cyan-400 cursor-pointer transition-colors leading-snug">

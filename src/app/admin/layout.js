@@ -15,9 +15,11 @@ import {
   ArrowRight,
   ShieldCheck,
   Loader2,
-  Lock
+  Lock,
+  Megaphone
 } from "lucide-react";
 import { checkSessionAction, logoutAction } from "@/app/actions/authActions";
+
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
@@ -114,6 +116,12 @@ export default function AdminLayout({ children }) {
       href: "/admin/news",
       icon: FileText,
       isActive: pathname.startsWith("/admin/news")
+    },
+    {
+      name: "Kelola Pengumuman",
+      href: "/admin/announcements",
+      icon: Megaphone,
+      isActive: pathname.startsWith("/admin/announcements")
     }
   ];
 
@@ -123,6 +131,12 @@ export default function AdminLayout({ children }) {
     ? "Edit Berita"
     : pathname.startsWith("/admin/news")
     ? "Daftar Kelola Berita"
+    : pathname.includes("/announcements/new")
+    ? "Tulis Pengumuman Baru"
+    : pathname.includes("/announcements/edit")
+    ? "Edit Pengumuman"
+    : pathname.startsWith("/admin/announcements")
+    ? "Daftar Kelola Pengumuman"
     : "Ringkasan Dashboard";
 
   return (
