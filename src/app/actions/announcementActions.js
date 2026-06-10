@@ -2,14 +2,17 @@
 
 import clientPromise from "@/lib/mongodb";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { generatePresignedUrl, uploadToS3 } from "@/lib/s3";
 
-// Helper function: Map Mongo _id to slug string
-function mapDocument(doc) {
+// Helper function: Map Mongo _id to slug string and sign S3 URLs
+async function mapDocument(doc) {
   if (!doc) return null;
   const { _id, ...rest } = doc;
-  return { slug: _id.toString(), ...rest };
+  const mapped = { slug: _id.toString(), ...rest };
+  if (mapped.attachmentUrl) {
+    mapped.attachmentUrl = await generatePresignedUrl(mapped.attachmentUrl);
+  }
+  return mapped;
 }
 
 // Helper: Format Indonesian date
@@ -81,8 +84,8 @@ export async function getAllAnnouncementsAction() {
     }
 
     const docs = await collection.find({}).toArray();
-    return docs
-      .map(mapDocument)
+    const mappedDocs = await Promise.all(docs.map(mapDocument));
+    return mappedDocs
       .sort((a, b) => new Date(b.dateISO) - new Date(a.dateISO));
   } catch (error) {
     console.error("Failed to fetch announcements from MongoDB:", error);
@@ -100,7 +103,7 @@ export async function getAnnouncementBySlugAction(slug) {
     const collection = db.collection("announcements");
 
     const doc = await collection.findOne({ _id: slug });
-    if (doc) return mapDocument(doc);
+    if (doc) return await mapDocument(doc);
 
     // Fallback search in static list
     const { announcements: staticAnnouncements } = await import("@/lib/announcements");
@@ -183,7 +186,7 @@ export async function createAnnouncementAction(data) {
       readingTimeEN: estimateReadingTime(enContent, true),
       coverGradient: data.coverGradient || "from-brand-navy-950 via-brand-navy-800 to-brand-cyan-600",
       coverAccent: data.coverAccent || "#00bacf",
-      attachmentUrl: data.attachmentUrl || "",
+      attachmentUrl: data.attachmentUrl ? data.attachmentUrl.split("?")[0] : "",
       attachmentName: data.attachmentName || "",
       attachmentSize: data.attachmentSize || "",
     };
@@ -244,7 +247,7 @@ export async function updateAnnouncementAction(slug, data) {
       readingTimeEN: estimateReadingTime(enContent, true),
       coverGradient: data.coverGradient || "from-brand-navy-950 via-brand-navy-800 to-brand-cyan-600",
       coverAccent: data.coverAccent || "#00bacf",
-      attachmentUrl: data.attachmentUrl || "",
+      attachmentUrl: data.attachmentUrl ? data.attachmentUrl.split("?")[0] : "",
       attachmentName: data.attachmentName || "",
       attachmentSize: data.attachmentSize || "",
     };
@@ -308,7 +311,7 @@ function formatBytes(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 }
 
-// 6. Upload Attachment Document (PDF, etc.) to public/uploads
+// 6. Upload Attachment Document (PDF, etc.) to MinIO
 export async function uploadAttachmentAction(base64Data, fileName) {
   try {
     const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
@@ -316,6 +319,7 @@ export async function uploadAttachmentAction(base64Data, fileName) {
       return { success: false, error: "Format file base64 salah." };
     }
     
+    const contentType = matches[1];
     const base64Buffer = Buffer.from(matches[2], "base64");
     const bytes = base64Buffer.length;
     const formattedSize = formatBytes(bytes);
@@ -324,20 +328,18 @@ export async function uploadAttachmentAction(base64Data, fileName) {
     const cleanFileName = fileName.replace(/[^\w\s\.-]/gi, "_").replace(/[\s]+/g, "-");
     const uniqueName = `${Date.now()}-${cleanFileName}`;
     
-    const uploadsDir = join(process.cwd(), "public", "uploads");
-    await mkdir(uploadsDir, { recursive: true });
-    
-    const filePath = join(uploadsDir, uniqueName);
-    await writeFile(filePath, base64Buffer);
+    const key = `uploads/${uniqueName}`;
+    const fileUrl = await uploadToS3(base64Buffer, key, contentType);
+    const previewUrl = await generatePresignedUrl(fileUrl);
     
     return { 
       success: true, 
-      url: `/uploads/${uniqueName}`, 
+      url: previewUrl, 
       name: fileName, 
       size: formattedSize 
     };
   } catch (error) {
-    console.error("Failed to write attachment file:", error);
+    console.error("Failed to upload attachment file to MinIO:", error);
     return { success: false, error: error.message };
   }
 }

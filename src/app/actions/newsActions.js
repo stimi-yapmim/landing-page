@@ -2,14 +2,17 @@
 
 import clientPromise from "@/lib/mongodb";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { generatePresignedUrl, uploadToS3 } from "@/lib/s3";
 
-// Helper function: Map Mongo _id to id string for codebase compatibility
-function mapDocument(doc) {
+// Helper function: Map Mongo _id to id string for codebase compatibility and sign S3 URLs
+async function mapDocument(doc) {
   if (!doc) return null;
   const { _id, ...rest } = doc;
-  return { id: _id.toString(), ...rest };
+  const mapped = { id: _id.toString(), ...rest };
+  if (mapped.coverImage) {
+    mapped.coverImage = await generatePresignedUrl(mapped.coverImage);
+  }
+  return mapped;
 }
 
 // Helper: Format today's date in Indonesian style
@@ -77,8 +80,8 @@ export async function getAllArticlesAction() {
     }
 
     const docs = await collection.find({}).toArray();
-    return docs
-      .map(mapDocument)
+    const mappedDocs = await Promise.all(docs.map(mapDocument));
+    return mappedDocs
       .sort((a, b) => new Date(b.dateISO) - new Date(a.dateISO));
   } catch (error) {
     console.error("Failed to fetch articles from MongoDB:", error);
@@ -96,7 +99,7 @@ export async function getArticleByIdAction(id) {
     const collection = db.collection("articles");
 
     const doc = await collection.findOne({ _id: id });
-    if (doc) return mapDocument(doc);
+    if (doc) return await mapDocument(doc);
 
     // Fallback search in static list
     const { articles: staticArticles } = await import("@/lib/articles");
@@ -170,7 +173,7 @@ export async function createArticleAction(data) {
       excerpt,
       coverGradient: data.coverGradient || "from-brand-navy-950 via-brand-navy-800 to-brand-cyan-600",
       coverAccent: data.coverAccent || "#00bacf",
-      coverImage: data.coverImage || "",
+      coverImage: data.coverImage ? data.coverImage.split("?")[0] : "",
       content,
       tags,
     };
@@ -225,7 +228,7 @@ export async function updateArticleAction(id, data) {
       excerpt,
       coverGradient: data.coverGradient || "from-brand-navy-950 via-brand-navy-800 to-brand-cyan-600",
       coverAccent: data.coverAccent || "#00bacf",
-      coverImage: data.coverImage,
+      coverImage: data.coverImage ? data.coverImage.split("?")[0] : "",
       content,
       tags,
     };
@@ -280,7 +283,7 @@ export async function deleteArticleAction(id) {
   }
 }
 
-// 6. Upload Content Image to public/images
+// 6. Upload Content Image to MinIO
 export async function uploadImageAction(base64Data) {
   try {
     const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
@@ -297,15 +300,14 @@ export async function uploadImageAction(base64Data) {
     else if (mimeType.includes("webp")) ext = "webp";
     
     const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
-    const imagesDir = join(process.cwd(), "public", "images");
-    await mkdir(imagesDir, { recursive: true });
+    const key = `images/${uniqueName}`;
     
-    const filePath = join(imagesDir, uniqueName);
-    await writeFile(filePath, base64Buffer);
+    const fileUrl = await uploadToS3(base64Buffer, key, mimeType);
+    const previewUrl = await generatePresignedUrl(fileUrl);
     
-    return { success: true, url: `/images/${uniqueName}` };
+    return { success: true, url: previewUrl };
   } catch (error) {
-    console.error("Failed to write image file:", error);
+    console.error("Failed to upload image file to MinIO:", error);
     return { success: false, error: error.message };
   }
 }
