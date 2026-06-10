@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Loader2, AlertCircle, Upload, Trash, Image as ImageIcon } from "lucide-react";
-import { createArticleAction, uploadImageAction } from "@/app/actions/newsActions";
+import { createArticleAction, uploadImageAction, getNewsCategoriesAction, createNewsCategoryAction } from "@/app/actions/newsActions";
 import RichEditor from "@/components/RichEditor";
 
 export default function NewNewsPage() {
@@ -15,6 +15,7 @@ export default function NewNewsPage() {
   const [formData, setFormData] = useState({
     title: "",
     category: "Akademik",
+    categoryColor: "cyan",
     author: "Humas STIMI YAPMI",
     excerpt: "",
     content: "",
@@ -24,8 +25,121 @@ export default function NewNewsPage() {
     coverImage: "",
   });
 
+  const [categories, setCategories] = useState([]);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryColor, setNewCategoryColor] = useState("cyan");
+  const [savingCategory, setSavingCategory] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  function getGradientAndAccent(categoryName, color) {
+    if (color === "gold") {
+      return {
+        gradient: "from-brand-navy-950 via-brand-navy-800 to-brand-gold-600",
+        accent: "#f59e0b"
+      };
+    } else if (color === "emerald") {
+      return {
+        gradient: "from-brand-navy-950 via-brand-navy-800 to-emerald-600",
+        accent: "#10b981"
+      };
+    } else if (color === "purple") {
+      return {
+        gradient: "from-brand-navy-950 via-brand-navy-800 to-purple-600",
+        accent: "#7c3aed"
+      };
+    } else if (color === "orange") {
+      return {
+        gradient: "from-brand-navy-950 via-brand-navy-800 to-orange-600",
+        accent: "#ea580c"
+      };
+    } else {
+      return {
+        gradient: "from-brand-navy-950 via-brand-navy-800 to-brand-cyan-600",
+        accent: "#00bacf"
+      };
+    }
+  }
+
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const cats = await getNewsCategoriesAction();
+        setCategories(cats);
+        if (cats && cats.length > 0) {
+          setFormData(prev => {
+            const hasCat = cats.find(c => c.name === prev.category);
+            const defaultCat = hasCat || cats[0];
+            const updated = {
+              ...prev,
+              category: defaultCat.name,
+              categoryColor: defaultCat.color,
+            };
+            const gradients = getGradientAndAccent(defaultCat.name, defaultCat.color);
+            updated.coverGradient = gradients.gradient;
+            updated.coverAccent = gradients.accent;
+            return updated;
+          });
+        }
+      } catch (err) {
+        console.error("Gagal memuat kategori:", err);
+      }
+    }
+    loadCategories();
+  }, []);
+
+  const handleCategoryChange = (e) => {
+    const value = e.target.value;
+    const cat = categories.find(c => c.name === value);
+    const color = cat ? cat.color : "cyan";
+    const gradients = getGradientAndAccent(value, color);
+    
+    setFormData(prev => ({
+      ...prev,
+      category: value,
+      categoryColor: color,
+      coverGradient: gradients.gradient,
+      coverAccent: gradients.accent,
+    }));
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) {
+      alert("Nama kategori tidak boleh kosong!");
+      return;
+    }
+    
+    setSavingCategory(true);
+    try {
+      const res = await createNewsCategoryAction({
+        name: newCategoryName.trim(),
+        color: newCategoryColor
+      });
+      
+      if (res.success) {
+        setCategories(prev => [...prev, res.category]);
+        const gradients = getGradientAndAccent(res.category.name, res.category.color);
+        setFormData(prev => ({
+          ...prev,
+          category: res.category.name,
+          categoryColor: res.category.color,
+          coverGradient: gradients.gradient,
+          coverAccent: gradients.accent,
+        }));
+        setNewCategoryName("");
+        setShowAddCategory(false);
+      } else {
+        alert("Gagal menyimpan kategori: " + res.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Kesalahan koneksi saat menyimpan kategori.");
+    } finally {
+      setSavingCategory(false);
+    }
+  };
 
   const handleThumbnailUpload = (e) => {
     const file = e.target.files[0];
@@ -216,20 +330,96 @@ export default function NewNewsPage() {
               <label htmlFor="category" className="block text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
                 Kategori Berita
               </label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-brand-navy-950 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-cyan-500/20 font-bold"
-              >
-                <option value="Akademik">Akademik</option>
-                <option value="Kuliah Umum">Kuliah Umum</option>
-                <option value="Pendaftaran">Pendaftaran</option>
-                <option value="Fasilitas">Fasilitas</option>
-                <option value="Beasiswa">Beasiswa</option>
-                <option value="Wisuda">Wisuda</option>
-              </select>
+              <div className="flex gap-2">
+                <select
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleCategoryChange}
+                  className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-brand-navy-950 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-cyan-500/20 font-bold"
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setShowAddCategory(!showAddCategory)}
+                  className="px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-brand-navy-950 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-brand-navy-850 font-bold text-sm shrink-0 cursor-pointer"
+                  title="Tambah Kategori Baru"
+                >
+                  +
+                </button>
+              </div>
+
+              {/* Inline Form to Add Category */}
+              {showAddCategory && (
+                <div className="mt-3 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-brand-navy-950/50 space-y-3.5">
+                  <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    Kategori Baru
+                  </h4>
+                  
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Nama kategori baru..."
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-750 bg-white dark:bg-brand-navy-900 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-cyan-500/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
+                      Warna Tema Kategori
+                    </label>
+                    <div className="flex gap-2.5">
+                      {[
+                        { code: "cyan", class: "bg-cyan-500" },
+                        { code: "gold", class: "bg-amber-500" },
+                        { code: "emerald", class: "bg-emerald-500" },
+                        { code: "purple", class: "bg-purple-500" },
+                        { code: "orange", class: "bg-orange-500" },
+                      ].map((color) => (
+                        <button
+                          key={color.code}
+                          type="button"
+                          onClick={() => setNewCategoryColor(color.code)}
+                          className={`h-6 w-6 rounded-full ${color.class} cursor-pointer transition-all ${
+                            newCategoryColor === color.code
+                              ? "ring-2 ring-offset-2 ring-brand-cyan-500 scale-110"
+                              : "opacity-75 hover:opacity-100"
+                          }`}
+                          title={color.code}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={savingCategory}
+                      onClick={handleAddCategory}
+                      className="flex-1 py-1.5 rounded-lg bg-brand-cyan-500 hover:bg-brand-cyan-600 text-[10px] font-black text-white uppercase tracking-wider transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      {savingCategory ? "Menyimpan..." : "Simpan"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddCategory(false);
+                        setNewCategoryName("");
+                      }}
+                      className="flex-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-brand-navy-900 text-[10px] font-black text-slate-500 uppercase tracking-wider hover:bg-slate-50 transition-all cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Thumbnail Upload */}

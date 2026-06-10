@@ -15,6 +15,13 @@ async function mapDocument(doc) {
   return mapped;
 }
 
+// Helper function: Map Mongo _id to id string for category documents
+function mapCategory(doc) {
+  if (!doc) return null;
+  const { _id, ...rest } = doc;
+  return { id: _id.toString(), ...rest };
+}
+
 // Helper: Format today's date in Indonesian style
 function formatIndoDate(date) {
   const d = new Date(date);
@@ -151,15 +158,7 @@ export async function createArticleAction(data) {
       ? data.tags.split(",").map(t => t.trim()).filter(Boolean)
       : [];
 
-    const categoryColorMap = {
-      "Akademik": "cyan",
-      "Kuliah Umum": "gold",
-      "Pendaftaran": "emerald",
-      "Fasilitas": "purple",
-      "Beasiswa": "orange",
-      "Wisuda": "cyan",
-    };
-    const categoryColor = categoryColorMap[data.category] || "cyan";
+    const categoryColor = data.categoryColor || "cyan";
 
     const newDoc = {
       _id: slug,
@@ -209,15 +208,7 @@ export async function updateArticleAction(id, data) {
       ? data.tags.split(",").map(t => t.trim()).filter(Boolean)
       : [];
 
-    const categoryColorMap = {
-      "Akademik": "cyan",
-      "Kuliah Umum": "gold",
-      "Pendaftaran": "emerald",
-      "Fasilitas": "purple",
-      "Beasiswa": "orange",
-      "Wisuda": "cyan",
-    };
-    const categoryColor = categoryColorMap[data.category] || "cyan";
+    const categoryColor = data.categoryColor || "cyan";
 
     const updateFields = {
       title: data.title,
@@ -308,6 +299,84 @@ export async function uploadImageAction(base64Data) {
     return { success: true, url: previewUrl };
   } catch (error) {
     console.error("Failed to upload image file to MinIO:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// 7. Get All News Categories (with Seeding)
+export async function getNewsCategoriesAction() {
+  try {
+    const client = await clientPromise;
+    const db = client.db("humas-stimi");
+    const collection = db.collection("news_categories");
+
+    const count = await collection.countDocuments();
+    if (count === 0) {
+      // Seed default categories
+      const defaultCategories = [
+        { _id: "akademik", name: "Akademik", color: "cyan" },
+        { _id: "kuliah-umum", name: "Kuliah Umum", color: "gold" },
+        { _id: "pendaftaran", name: "Pendaftaran", color: "emerald" },
+        { _id: "fasilitas", name: "Fasilitas", color: "purple" },
+        { _id: "beasiswa", name: "Beasiswa", color: "orange" },
+        { _id: "wisuda", name: "Wisuda", color: "cyan" },
+      ];
+      await collection.insertMany(defaultCategories);
+      console.log("Database seeded successfully with default categories.");
+    }
+
+    const docs = await collection.find({}).toArray();
+    return docs.map(mapCategory);
+  } catch (error) {
+    console.error("Failed to fetch news categories from MongoDB:", error);
+    // Fallback to defaults
+    return [
+      { id: "akademik", name: "Akademik", color: "cyan" },
+      { id: "kuliah-umum", name: "Kuliah Umum", color: "gold" },
+      { id: "pendaftaran", name: "Pendaftaran", color: "emerald" },
+      { id: "fasilitas", name: "Fasilitas", color: "purple" },
+      { id: "beasiswa", name: "Beasiswa", color: "orange" },
+      { id: "wisuda", name: "Wisuda", color: "cyan" },
+    ];
+  }
+}
+
+// 8. Create News Category
+export async function createNewsCategoryAction(data) {
+  try {
+    const client = await clientPromise;
+    const db = client.db("humas-stimi");
+    const collection = db.collection("news_categories");
+
+    const name = data.name ? data.name.trim() : "";
+    const color = data.color || "cyan";
+
+    if (!name) {
+      return { success: false, error: "Nama kategori tidak boleh kosong." };
+    }
+
+    const id = generateSlug(name);
+
+    // Check if category already exists
+    const existing = await collection.findOne({ _id: id });
+    if (existing) {
+      return { success: false, error: "Kategori dengan nama tersebut sudah ada." };
+    }
+
+    await collection.insertOne({
+      _id: id,
+      name,
+      color,
+    });
+
+    revalidatePath("/");
+    revalidatePath("/news");
+    revalidatePath("/admin/news/new");
+    revalidatePath("/admin/news/edit/[id]", "page");
+
+    return { success: true, category: { id, name, color } };
+  } catch (error) {
+    console.error("Failed to create news category:", error);
     return { success: false, error: error.message };
   }
 }
