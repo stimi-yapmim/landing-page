@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, X, Search, Phone, Globe, ChevronDown } from "lucide-react";
+import { Menu, X, Search, Phone, Globe, ChevronDown, Sun, Moon } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useT } from "@/lib/translations";
+import { useTheme } from "@/contexts/ThemeContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -13,6 +14,7 @@ export default function Navbar() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false);
   const { lang, setLang } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const t = useT(lang).nav;
   const pathname = usePathname();
   const isHomepage = pathname === "/";
@@ -92,14 +94,16 @@ export default function Navbar() {
 
             {/* Logo */}
             <a href="#" className="flex items-center group" id="brand-logo-link">
-              <picture>
-                <source srcSet="/logo_stimi_dark.png" media="(prefers-color-scheme: dark)" />
-                <img
-                  src="/logo_stimi.svg"
-                  alt="Logo STIMI YAPMI Makassar"
-                  className="h-14 w-auto object-contain transition-transform group-hover:scale-105"
-                />
-              </picture>
+              <img
+                src="/logo_stimi.svg"
+                alt="Logo STIMI YAPMI Makassar"
+                className="h-14 w-auto object-contain transition-transform group-hover:scale-105 dark:hidden"
+              />
+              <img
+                src="/logo_stimi_dark.png"
+                alt="Logo STIMI YAPMI Makassar"
+                className="h-14 w-auto object-contain transition-transform group-hover:scale-105 hidden dark:block"
+              />
             </a>
 
             {/* Desktop Nav Links */}
@@ -185,6 +189,24 @@ export default function Navbar() {
                 <Search className="h-5 w-5" />
               </button>
 
+              {/* Theme Toggle Button */}
+              <button
+                onClick={toggleTheme}
+                className={`p-2 rounded-full hover:bg-slate-100 dark:hover:bg-brand-navy-900 transition-colors cursor-pointer ${
+                  scrolled ? "text-slate-600 dark:text-slate-300" : "text-slate-600 dark:text-slate-300 md:text-slate-200"
+                }`}
+                aria-label={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                id="theme-toggle-btn"
+              >
+                {theme === null ? (
+                  <div className="h-5 w-5" />
+                ) : theme === "dark" ? (
+                  <Sun className="h-5 w-5 text-brand-gold-500" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </button>
+
               <a
                 href="https://pmb.stimiyapmim.ac.id/"
                 target="_blank"
@@ -196,7 +218,7 @@ export default function Navbar() {
               </a>
             </div>
 
-            {/* Mobile: language toggle + hamburger */}
+            {/* Mobile: language toggle + theme toggle + hamburger */}
             <div className="flex md:hidden items-center gap-3">
               {/* Mobile language switcher */}
               <div className="flex items-center gap-1 bg-slate-100 dark:bg-brand-navy-800 rounded-full px-2 py-1">
@@ -223,6 +245,22 @@ export default function Navbar() {
                   EN
                 </button>
               </div>
+
+              {/* Mobile theme toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-brand-navy-900 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                aria-label={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                id="mobile-theme-toggle-btn"
+              >
+                {theme === null ? (
+                  <div className="h-5 w-5" />
+                ) : theme === "dark" ? (
+                  <Sun className="h-5 w-5 text-brand-gold-500" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </button>
 
               <button
                 onClick={() => setIsOpen(!isOpen)}

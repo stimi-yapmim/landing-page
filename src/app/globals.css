@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-brand-navy-950: #030a1c;
   --color-brand-navy-900: #051435;
@@ -25,11 +27,9 @@
   --foreground: #3c3c3c;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #030a1c;
-    --foreground: #f8fafc;
-  }
+:root.dark {
+  --background: #030a1c;
+  --foreground: #f8fafc;
 }
 
 body {
