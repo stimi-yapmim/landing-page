@@ -143,9 +143,8 @@ export async function createArticleAction(data) {
       counter++;
     }
 
-    const today = new Date();
-    const dateISO = today.toISOString().split("T")[0];
-    const dateStr = formatIndoDate(today);
+    const dateISO = data.dateISO || new Date().toISOString().split("T")[0];
+    const dateStr = formatIndoDate(new Date(dateISO));
 
     // Use HTML content string directly from rich editor
     const content = data.content || "<p>Konten berita.</p>";

@@ -9,6 +9,14 @@ import { createAnnouncementAction, uploadAttachmentAction } from "@/app/actions/
 export default function NewAnnouncementPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("id"); // "id" or "en"
+
+  const getTodayString = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
   
   const [formData, setFormData] = useState({
     idTitle: "",
@@ -28,6 +36,7 @@ export default function NewAnnouncementPage() {
     author: "Humas STIMI YAPMI",
     coverGradient: "from-brand-navy-950 via-brand-navy-800 to-brand-cyan-600",
     coverAccent: "#00bacf",
+    dateISO: getTodayString(),
     attachmentUrl: "",
     attachmentName: "",
     attachmentSize: "",
@@ -439,6 +448,22 @@ export default function NewAnnouncementPage() {
                 onChange={handleChange}
                 placeholder="Humas STIMI YAPMI"
                 className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-brand-navy-950 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-cyan-500/20"
+              />
+            </div>
+
+            {/* Publish Date */}
+            <div>
+              <label htmlFor="dateISO" className="block text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
+                Tanggal Publikasi
+              </label>
+              <input
+                type="date"
+                id="dateISO"
+                name="dateISO"
+                value={formData.dateISO}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-brand-navy-950 text-xs text-slate-700 dark:text-slate-250 focus:outline-none focus:ring-2 focus:ring-brand-cyan-500/20 font-bold"
               />
             </div>
 

@@ -140,10 +140,10 @@ export async function createAnnouncementAction(data) {
       counter++;
     }
 
-    const today = new Date();
-    const dateISO = today.toISOString().split("T")[0];
-    const dateStr = formatIndoDate(today);
-    const dateENStr = formatEngDate(today);
+    const dateISO = data.dateISO || new Date().toISOString().split("T")[0];
+    const parsedDate = new Date(dateISO);
+    const dateStr = formatIndoDate(parsedDate);
+    const dateENStr = formatEngDate(parsedDate);
 
     // Split contents by line breaks into array of strings
     const parseContent = (contentStr) => {
