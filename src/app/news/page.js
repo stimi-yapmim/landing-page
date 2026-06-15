@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { Calendar, User, Clock, ArrowRight, Search, Tag, ArrowLeft, BookOpen } from "lucide-react";
+import { Calendar, User, Clock, ArrowRight, Search, Tag, ArrowLeft, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { getAllArticles as getAllArticlesMock } from "@/lib/articles";
-import { getAllArticlesAction } from "@/app/actions/newsActions";
-import { useEffect } from "react";
+import { getAllArticlesAction, getPaginatedArticlesAction, getNewsCategoriesAction } from "@/app/actions/newsActions";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -164,56 +163,135 @@ function ArticleCard({ article }) {
 }
 
 export default function NewsIndexPage() {
-  const [allArticles, setAllArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [articles, setArticles] = useState([]);
+  const [categories, setCategories] = useState(["Semua"]);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  // Pagination & Filtering state
   const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalArticles, setTotalArticles] = useState(0);
 
+  // Debounce search input to avoid database spamming
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const cats = await getNewsCategoriesAction();
+        const catNames = cats.map((c) => c.name);
+        setCategories(["Semua", ...catNames]);
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+        setCategories([
+          "Semua",
+          "Akademik",
+          "Kuliah Umum",
+          "Pendaftaran",
+          "Fasilitas",
+          "Beasiswa",
+          "Wisuda",
+        ]);
+      }
+    }
+    loadCategories();
+  }, []);
+
+  // Fetch articles on filter/page change
   useEffect(() => {
     async function loadArticles() {
+      setLoading(true);
       try {
-        const data = await getAllArticlesAction();
-        setAllArticles(data);
+        const result = await getPaginatedArticlesAction({
+          page: currentPage,
+          category: selectedCategory,
+          search: debouncedSearchQuery,
+        });
+
+        if (result.success) {
+          setArticles(result.articles);
+          setTotalArticles(result.totalArticles);
+          setTotalPages(result.totalPages);
+        } else {
+          throw new Error("Action did not return success");
+        }
       } catch (err) {
-        console.error("Failed to load articles from DB:", err);
-        setAllArticles(getAllArticlesMock());
+        console.error("Failed to load paginated articles, falling back to mock:", err);
+        const { getAllArticles } = await import("@/lib/articles");
+        const all = getAllArticles();
+
+        // Filter local mock articles
+        let filtered = all;
+        if (selectedCategory !== "Semua") {
+          filtered = filtered.filter((a) => a.category === selectedCategory);
+        }
+        if (debouncedSearchQuery) {
+          const s = debouncedSearchQuery.toLowerCase();
+          filtered = filtered.filter(
+            (a) =>
+              a.title.toLowerCase().includes(s) ||
+              a.excerpt.toLowerCase().includes(s) ||
+              a.category.toLowerCase().includes(s)
+          );
+        }
+
+        setTotalArticles(filtered.length);
+
+        let limit = 6;
+        let skip = 0;
+        if (currentPage === 1) {
+          limit = 7;
+          skip = 0;
+        } else {
+          limit = 6;
+          skip = 7 + (currentPage - 2) * 6;
+        }
+
+        setArticles(filtered.slice(skip, skip + limit));
+
+        let tp = 1;
+        if (filtered.length > 7) {
+          tp = 1 + Math.ceil((filtered.length - 7) / 6);
+        } else if (filtered.length > 0) {
+          tp = 1;
+        } else {
+          tp = 0;
+        }
+        setTotalPages(tp);
       } finally {
         setLoading(false);
+        setInitialLoading(false);
       }
     }
     loadArticles();
-  }, []);
+  }, [currentPage, selectedCategory, debouncedSearchQuery]);
 
-  const categories = useMemo(() => {
-    const cats = new Set(allArticles.map((a) => a.category));
-    return ["Semua", ...Array.from(cats)];
-  }, [allArticles]);
+  // Reset page to 1 on filter/search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, debouncedSearchQuery]);
 
-  const filteredArticles = useMemo(() => {
-    return allArticles.filter((a) => {
-      const matchCat =
-        selectedCategory === "Semua" || a.category === selectedCategory;
-      const q = searchQuery.toLowerCase();
-      const matchSearch =
-        !q ||
-        a.title.toLowerCase().includes(q) ||
-        a.excerpt.toLowerCase().includes(q) ||
-        a.category.toLowerCase().includes(q);
-      return matchCat && matchSearch;
-    });
-  }, [allArticles, selectedCategory, searchQuery]);
+  const featuredArticle = currentPage === 1 ? articles[0] : null;
+  const restArticles = currentPage === 1 ? articles.slice(1) : articles;
 
-  const featuredArticle = filteredArticles[0];
-  const restArticles = filteredArticles.slice(1);
-
-  if (loading) {
+  if (initialLoading) {
     return (
       <>
         <Navbar />
         <main className="flex-1 bg-slate-50 dark:bg-brand-navy-950 min-h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-brand-cyan-500 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-            <p className="mt-4 text-sm font-bold text-slate-500 dark:text-slate-400">Memuat berita terbaru...</p>
+            <p className="mt-4 text-sm font-bold text-slate-500 dark:text-slate-400 animate-pulse">Memuat berita terbaru...</p>
           </div>
         </main>
         <Footer />
@@ -260,7 +338,7 @@ export default function NewsIndexPage() {
               {/* Stats */}
               <div className="flex gap-6">
                 <div className="text-center">
-                  <p className="text-3xl font-black text-white">{allArticles.length}</p>
+                  <p className="text-3xl font-black text-white">{totalArticles}</p>
                   <p className="text-xs text-slate-400 font-semibold mt-1">Total Artikel</p>
                 </div>
                 <div className="w-px bg-slate-700" />
@@ -315,7 +393,7 @@ export default function NewsIndexPage() {
 
         {/* Articles Content */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-          {filteredArticles.length === 0 ? (
+          {articles.length === 0 ? (
             /* Empty State */
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="h-20 w-20 rounded-full bg-slate-100 dark:bg-brand-navy-900 flex items-center justify-center mb-6">
@@ -333,7 +411,7 @@ export default function NewsIndexPage() {
               </button>
             </div>
           ) : (
-            <div className="space-y-12">
+            <div className={`space-y-12 transition-all duration-305 ${loading ? "opacity-50 pointer-events-none filter blur-[0.5px]" : "opacity-100"}`}>
               {/* Featured Article */}
               {featuredArticle && (
                 <div>
@@ -353,6 +431,58 @@ export default function NewsIndexPage() {
                     {restArticles.map((article) => (
                       <ArticleCard key={article.id} article={article} />
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="mt-16 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-slate-250/50 dark:border-slate-800/50 pt-8">
+                  <div className="text-xs font-bold text-slate-500 dark:text-slate-405">
+                    Menampilkan <span className="text-slate-800 dark:text-slate-200 font-extrabold">{(currentPage === 1 ? 1 : 8 + (currentPage - 2) * 6)}</span> - <span className="text-slate-800 dark:text-slate-200 font-extrabold">{Math.min(totalArticles, (currentPage === 1 ? 7 : 7 + (currentPage - 1) * 6))}</span> dari <span className="text-slate-800 dark:text-slate-200 font-extrabold">{totalArticles}</span> artikel
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {/* Previous Button */}
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1 || loading}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 dark:border-slate-850 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-brand-navy-900 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:pointer-events-none cursor-pointer"
+                      title="Halaman Sebelumnya"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+
+                    {/* Page Numbers */}
+                    {(() => {
+                      const pages = [];
+                      for (let i = 1; i <= totalPages; i++) {
+                        pages.push(
+                          <button
+                            key={i}
+                            onClick={() => setCurrentPage(i)}
+                            disabled={loading}
+                            className={`w-10 h-10 flex items-center justify-center rounded-full text-xs transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                              currentPage === i
+                                ? "bg-brand-cyan-500 text-white shadow-md font-black"
+                                : "bg-slate-100 dark:bg-brand-navy-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-brand-navy-700 font-bold"
+                            }`}
+                          >
+                            {i}
+                          </button>
+                        );
+                      }
+                      return pages;
+                    })()}
+
+                    {/* Next Button */}
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages || loading}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 dark:border-slate-850 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-brand-navy-900 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:pointer-events-none cursor-pointer"
+                      title="Halaman Berikutnya"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               )}

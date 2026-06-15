@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Edit2, Trash2, Calendar, Tag, FileText, ArrowLeft, RefreshCw, AlertCircle } from "lucide-react";
-import { getAllArticlesAction, deleteArticleAction } from "@/app/actions/newsActions";
+import { Plus, Edit2, Trash2, Calendar, Tag, FileText, ArrowLeft, RefreshCw, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { getPaginatedArticlesAction, getNewsCategoriesAction, deleteArticleAction } from "@/app/actions/newsActions";
 
 export default function AdminNewsPage() {
   const [articles, setArticles] = useState([]);
@@ -11,11 +11,23 @@ export default function AdminNewsPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalArticles, setTotalArticles] = useState(0);
+  const [categoriesCount, setCategoriesCount] = useState(0);
+
   async function loadArticles() {
     setLoading(true);
     try {
-      const data = await getAllArticlesAction();
-      setArticles(data);
+      const result = await getPaginatedArticlesAction({ page: currentPage, limit: 10 });
+      if (result.success) {
+        setArticles(result.articles);
+        setTotalArticles(result.totalArticles);
+        setTotalPages(result.totalPages);
+      } else {
+        throw new Error("Failed to fetch articles");
+      }
     } catch (err) {
       console.error(err);
       setError("Gagal memuat berita dari database.");
@@ -24,9 +36,24 @@ export default function AdminNewsPage() {
     }
   }
 
+  // Fetch categories count on mount
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const cats = await getNewsCategoriesAction();
+        setCategoriesCount(cats.length);
+      } catch (err) {
+        console.error(err);
+        setCategoriesCount(0);
+      }
+    }
+    loadCategories();
+  }, []);
+
+  // Fetch articles on page change
   useEffect(() => {
     loadArticles();
-  }, []);
+  }, [currentPage]);
 
   async function handleDelete(id) {
     if (!confirm("Apakah Anda yakin ingin menghapus berita ini secara permanen?")) return;
@@ -34,7 +61,11 @@ export default function AdminNewsPage() {
       const res = await deleteArticleAction(id);
       if (res.success) {
         setMessage("Berita berhasil dihapus!");
-        loadArticles();
+        if (articles.length === 1 && currentPage > 1) {
+          setCurrentPage(prev => prev - 1);
+        } else {
+          loadArticles();
+        }
         setTimeout(() => setMessage(""), 3000);
       } else {
         setError("Gagal menghapus berita: " + res.error);
@@ -47,8 +78,7 @@ export default function AdminNewsPage() {
     }
   }
 
-  const totalNews = articles.length;
-  const categoriesCount = new Set(articles.map(a => a.category)).size;
+  const totalNews = totalArticles;
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -139,61 +169,115 @@ export default function AdminNewsPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 dark:bg-brand-navy-800/50 border-b border-slate-150 dark:border-slate-800/80 text-[10px] font-black uppercase tracking-wider text-slate-400">
-                  <th className="px-6 py-4">Judul Berita</th>
-                  <th className="px-6 py-4">Kategori</th>
-                  <th className="px-6 py-4">Tanggal Publish</th>
-                  <th className="px-6 py-4">Estimasi Baca</th>
-                  <th className="px-6 py-4 text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                {articles.map((article) => (
-                  <tr key={article.id} className="hover:bg-slate-50/50 dark:hover:bg-brand-navy-950/20 transition-colors">
-                    <td className="px-6 py-4 max-w-sm">
-                      <Link href={`/news/${article.id}`} target="_blank" className="font-extrabold text-brand-navy-950 dark:text-white hover:text-brand-cyan-500 transition-colors line-clamp-1">
-                        {article.title}
-                      </Link>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 truncate">Slug: {article.id}</p>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-cyan-550/10 text-brand-cyan-600 dark:text-brand-cyan-400">
-                        {article.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-slate-400 dark:text-slate-400">
-                      <span>{article.date}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-slate-400 dark:text-slate-500">
-                      {article.readingTime}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className="flex justify-end gap-2">
-                        <Link
-                          href={`/admin/news/edit/${article.id}`}
-                          id={`edit-news-${article.id}`}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 hover:bg-brand-cyan-500 hover:text-white dark:bg-brand-navy-800 text-slate-600 dark:text-slate-300 transition-colors"
-                          title="Edit berita"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(article.id)}
-                          id={`delete-news-${article.id}`}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 hover:bg-red-500 hover:text-white dark:bg-red-950/20 text-red-650 dark:text-red-400 transition-colors cursor-pointer"
-                          title="Hapus berita"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
+          <div>
+            <div className={`overflow-x-auto transition-all duration-300 ${loading ? "opacity-50 pointer-events-none filter blur-[0.5px]" : "opacity-100"}`}>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-brand-navy-800/50 border-b border-slate-150 dark:border-slate-800/80 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    <th className="px-6 py-4">Judul Berita</th>
+                    <th className="px-6 py-4">Kategori</th>
+                    <th className="px-6 py-4">Tanggal Publish</th>
+                    <th className="px-6 py-4">Estimasi Baca</th>
+                    <th className="px-6 py-4 text-right">Aksi</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {articles.map((article) => (
+                    <tr key={article.id} className="hover:bg-slate-50/50 dark:hover:bg-brand-navy-950/20 transition-colors">
+                      <td className="px-6 py-4 max-w-sm">
+                        <Link href={`/news/${article.id}`} target="_blank" className="font-extrabold text-brand-navy-950 dark:text-white hover:text-brand-cyan-500 transition-colors line-clamp-1">
+                          {article.title}
+                        </Link>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 truncate">Slug: {article.id}</p>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-cyan-550/10 text-brand-cyan-600 dark:text-brand-cyan-400">
+                          {article.category}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-slate-400 dark:text-slate-400">
+                        <span>{article.date}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-slate-400 dark:text-slate-505">
+                        {article.readingTime}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="flex justify-end gap-2">
+                          <Link
+                            href={`/admin/news/edit/${article.id}`}
+                            id={`edit-news-${article.id}`}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 hover:bg-brand-cyan-500 hover:text-white dark:bg-brand-navy-800 text-slate-600 dark:text-slate-300 transition-colors"
+                            title="Edit berita"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(article.id)}
+                            id={`delete-news-${article.id}`}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 hover:bg-red-500 hover:text-white dark:bg-red-950/20 text-red-650 dark:text-red-400 transition-colors cursor-pointer"
+                            title="Hapus berita"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Table Pagination */}
+            {totalPages > 1 && (
+              <div className="border-t border-slate-100 dark:border-slate-800/60 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/30 dark:bg-brand-navy-900/30">
+                <div className="text-xs font-bold text-slate-500 dark:text-slate-405">
+                  Menampilkan <span className="text-brand-navy-950 dark:text-white font-extrabold">{(currentPage - 1) * 10 + 1}</span> - <span className="text-brand-navy-950 dark:text-white font-extrabold">{Math.min(totalArticles, currentPage * 10)}</span> dari <span className="text-brand-navy-950 dark:text-white font-extrabold">{totalArticles}</span> artikel
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {/* Previous Button */}
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1 || loading}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-brand-navy-800/80 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:pointer-events-none cursor-pointer"
+                    title="Halaman Sebelumnya"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+
+                  {/* Page Numbers */}
+                  {(() => {
+                    const pages = [];
+                    for (let i = 1; i <= totalPages; i++) {
+                      pages.push(
+                        <button
+                          key={i}
+                          onClick={() => setCurrentPage(i)}
+                          disabled={loading}
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                            currentPage === i
+                              ? "bg-brand-cyan-500 text-white shadow-sm font-extrabold"
+                              : "bg-slate-100 dark:bg-brand-navy-800 text-slate-600 dark:text-slate-305 hover:bg-slate-200 dark:hover:bg-brand-navy-700 font-bold"
+                          }`}
+                        >
+                          {i}
+                        </button>
+                      );
+                    }
+                    return pages;
+                  })()}
+
+                  {/* Next Button */}
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages || loading}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-305 hover:bg-slate-100 dark:hover:bg-brand-navy-800/80 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:pointer-events-none cursor-pointer"
+                    title="Halaman Berikutnya"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

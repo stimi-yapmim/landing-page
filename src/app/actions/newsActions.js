@@ -97,6 +97,153 @@ export async function getAllArticlesAction() {
     return getAllArticles();
   }
 }
+// 1b. Get Paginated Articles (with Search & Category Filters and custom limit support)
+export async function getPaginatedArticlesAction({ page = 1, limit = null, category = "Semua", search = "" } = {}) {
+  try {
+    const client = await clientPromise;
+    const db = client.db("humas-stimi");
+    const collection = db.collection("articles");
+
+    // Ensure database is seeded if empty
+    const countAll = await collection.countDocuments();
+    if (countAll === 0) {
+      const { articles: staticArticles } = await import("@/lib/articles");
+      const seedData = Object.entries(staticArticles).map(([id, data]) => ({
+        _id: id,
+        ...data,
+      }));
+      await collection.insertMany(seedData);
+      console.log("Database seeded successfully with static articles.");
+    }
+
+    // Build query
+    const query = {};
+    if (category && category !== "Semua") {
+      query.category = category;
+    }
+    if (search) {
+      const searchRegex = new RegExp(search.trim(), "i");
+      query.$or = [
+        { title: searchRegex },
+        { excerpt: searchRegex },
+        { content: searchRegex },
+        { category: searchRegex },
+      ];
+    }
+
+    const totalArticles = await collection.countDocuments(query);
+
+    // Pagination logic
+    let limitToUse = 6;
+    let skipToUse = 0;
+    if (limit !== null) {
+      limitToUse = limit;
+      skipToUse = (page - 1) * limit;
+    } else {
+      // Dynamic pagination: Page 1 gets 7 items (1 featured + 6 grid), Page > 1 gets 6 items.
+      if (page === 1) {
+        limitToUse = 7;
+        skipToUse = 0;
+      } else {
+        limitToUse = 6;
+        skipToUse = 7 + (page - 2) * 6;
+      }
+    }
+
+    const docs = await collection
+      .find(query)
+      .sort({ dateISO: -1 })
+      .skip(skipToUse)
+      .limit(limitToUse)
+      .toArray();
+
+    const mappedDocs = await Promise.all(docs.map(mapDocument));
+
+    // Calculate total pages
+    let totalPages = 1;
+    if (limit !== null) {
+      totalPages = Math.ceil(totalArticles / limit);
+    } else {
+      if (totalArticles > 7) {
+        totalPages = 1 + Math.ceil((totalArticles - 7) / 6);
+      } else if (totalArticles > 0) {
+        totalPages = 1;
+      } else {
+        totalPages = 0;
+      }
+    }
+
+    return {
+      success: true,
+      articles: mappedDocs,
+      totalArticles,
+      totalPages,
+      currentPage: page,
+    };
+  } catch (error) {
+    console.error("Failed to fetch paginated articles from MongoDB:", error);
+    // Fallback to static mock articles
+    const { getAllArticles } = await import("@/lib/articles");
+    const allArticles = getAllArticles();
+
+    // Filter mock articles in memory
+    let filtered = allArticles;
+    if (category && category !== "Semua") {
+      filtered = filtered.filter((a) => a.category === category);
+    }
+    if (search) {
+      const s = search.trim().toLowerCase();
+      filtered = filtered.filter(
+        (a) =>
+          a.title.toLowerCase().includes(s) ||
+          a.excerpt.toLowerCase().includes(s) ||
+          (Array.isArray(a.content) ? a.content.join(" ").toLowerCase().includes(s) : String(a.content).toLowerCase().includes(s)) ||
+          a.category.toLowerCase().includes(s)
+      );
+    }
+
+    const totalArticles = filtered.length;
+
+    // Paging logic
+    let limitToUse = 6;
+    let skipToUse = 0;
+    if (limit !== null) {
+      limitToUse = limit;
+      skipToUse = (page - 1) * limit;
+    } else {
+      if (page === 1) {
+        limitToUse = 7;
+        skipToUse = 0;
+      } else {
+        limitToUse = 6;
+        skipToUse = 7 + (page - 2) * 6;
+      }
+    }
+
+    const paginatedArticles = filtered.slice(skipToUse, skipToUse + limitToUse);
+
+    let totalPages = 1;
+    if (limit !== null) {
+      totalPages = Math.ceil(totalArticles / limit);
+    } else {
+      if (totalArticles > 7) {
+        totalPages = 1 + Math.ceil((totalArticles - 7) / 6);
+      } else if (totalArticles > 0) {
+        totalPages = 1;
+      } else {
+        totalPages = 0;
+      }
+    }
+
+    return {
+      success: true,
+      articles: paginatedArticles,
+      totalArticles,
+      totalPages,
+      currentPage: page,
+    };
+  }
+}
 
 // 2. Get Article By ID / Slug
 export async function getArticleByIdAction(id) {
