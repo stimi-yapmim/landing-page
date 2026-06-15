@@ -246,24 +246,45 @@ export default function AdminNewsPage() {
 
                   {/* Page Numbers */}
                   {(() => {
-                    const pages = [];
+                    const range = [];
+                    const delta = 1;
                     for (let i = 1; i <= totalPages; i++) {
-                      pages.push(
+                      if (
+                        i === 1 ||
+                        i === totalPages ||
+                        (i >= currentPage - delta && i <= currentPage + delta)
+                      ) {
+                        range.push(i);
+                      } else if (range[range.length - 1] !== "...") {
+                        range.push("...");
+                      }
+                    }
+                    return range.map((item, idx) => {
+                      if (item === "...") {
+                        return (
+                          <span
+                            key={`dots-${idx}`}
+                            className="w-8 h-8 flex items-center justify-center text-xs font-bold text-slate-400 dark:text-slate-600"
+                          >
+                            ...
+                          </span>
+                        );
+                      }
+                      return (
                         <button
-                          key={i}
-                          onClick={() => setCurrentPage(i)}
+                          key={item}
+                          onClick={() => setCurrentPage(item)}
                           disabled={loading}
                           className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs transition-all hover:scale-105 active:scale-95 cursor-pointer ${
-                            currentPage === i
+                            currentPage === item
                               ? "bg-brand-cyan-500 text-white shadow-sm font-extrabold"
                               : "bg-slate-100 dark:bg-brand-navy-800 text-slate-600 dark:text-slate-305 hover:bg-slate-200 dark:hover:bg-brand-navy-700 font-bold"
                           }`}
                         >
-                          {i}
+                          {item}
                         </button>
                       );
-                    }
-                    return pages;
+                    });
                   })()}
 
                   {/* Next Button */}
